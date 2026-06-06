@@ -5,1683 +5,920 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>TORIA RPG · Карта Искажений Дохода</title>
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Raleway:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #C9A84C;
-    --gold-light: #F0D080;
-    --gold-dim: #8A6A20;
-    --dark: #0D0B0F;
-    --dark2: #131118;
-    --dark3: #1C1828;
-    --purple: #2D1F4E;
-    --purple-light: #4A2F7A;
-    --red: #C23B22;
-    --green: #2A7A4F;
-    --blue: #1A4A8A;
-    --orange: #B85C1A;
-    --text: #E8E0D0;
-    --text-dim: #9A8F7A;
-    --border: rgba(201,168,76,0.25);
-  }
+:root {
+  --gold:#C9A84C; --gold-l:#F0D080; --gold-d:#8A6A20;
+  --dark:#09080D; --dark2:#110F1A; --dark3:#1A1728;
+  --purple:#2D1F4E; --purple-l:#4A2F7A;
+  --red:#C23B22; --red-l:#FF6B4A;
+  --green:#2A7A4F; --blue:#1A4A8A;
+  --text:#E8E0D0; --dim:#9A8F7A; --border:rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--dark);color:var(--text);font-family:'Raleway',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(45,31,78,0.5) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 80%,rgba(26,20,60,0.4) 0%,transparent 55%),
+             radial-gradient(ellipse at 50% 50%,rgba(15,10,30,0.8) 0%,transparent 80%);}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+.screen{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1;}
+.screen.active{display:flex;}
 
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'Raleway', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    background-image: 
-      radial-gradient(ellipse at 20% 20%, rgba(45,31,78,0.4) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 80%, rgba(26,74,138,0.3) 0%, transparent 60%);
-  }
+/* FONTS */
+.cin{font-family:'Cinzel',serif;}
+.cin900{font-family:'Cinzel',serif;font-weight:900;}
 
-  /* SCREENS */
-  .screen { display: none; min-height: 100vh; flex-direction: column; }
-  .screen.active { display: flex; }
+/* GOLD TEXT */
+.text-gold{background:linear-gradient(135deg,var(--gold-l),var(--gold),var(--gold-d));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
-  /* NOISE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
-  }
+/* DIVIDER */
+.div-gold{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto;}
 
-  /* HEADER */
-  .game-header {
-    text-align: center;
-    padding: 40px 20px 20px;
-    position: relative;
-  }
-  .game-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(28px, 6vw, 52px);
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dim));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-    position: relative;
-  }
-  .game-subtitle {
-    font-family: 'Raleway', sans-serif;
-    font-weight: 300;
-    letter-spacing: 0.3em;
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
-  .divider {
-    width: 120px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    margin: 16px auto;
-  }
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:15px 24px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Cinzel',serif;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;width:100%;}
+.btn:hover{background:rgba(201,168,76,0.1);box-shadow:0 0 24px rgba(201,168,76,0.3);}
+.btn-gold{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:#09080D;font-weight:700;border-color:var(--gold-l);}
+.btn-gold:hover{box-shadow:0 0 32px rgba(201,168,76,0.6);}
+.btn-ghost{border-color:rgba(201,168,76,0.25);color:var(--dim);font-size:11px;}
+.btn-red{border-color:var(--red);color:var(--red-l);}
+.btn-red:hover{background:rgba(194,59,34,0.1);box-shadow:0 0 20px rgba(194,59,34,0.3);}
+.btn-sm{padding:10px 18px;font-size:10px;}
 
-  /* BUTTONS */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 32px;
-    border: 1px solid var(--gold);
-    background: transparent;
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(201,168,76,0.1), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .btn:hover::before { opacity: 1; }
-  .btn:hover { box-shadow: 0 0 20px rgba(201,168,76,0.3), inset 0 0 20px rgba(201,168,76,0.05); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-    color: var(--dark);
-    border-color: var(--gold);
-    font-weight: 700;
-  }
-  .btn-primary:hover { box-shadow: 0 0 30px rgba(201,168,76,0.5); }
-  .btn-sm { padding: 9px 20px; font-size: 11px; }
-  .btn-danger { border-color: var(--red); color: var(--red); }
-  .btn-danger:hover { box-shadow: 0 0 20px rgba(194,59,34,0.3); }
+/* ===== INTRO ===== */
+#screen-intro{align-items:center;justify-content:center;padding:30px 20px;text-align:center;}
+.intro-title{font-size:clamp(36px,8vw,64px);letter-spacing:0.12em;margin-bottom:4px;}
+.intro-sub{font-size:10px;letter-spacing:0.35em;color:var(--dim);text-transform:uppercase;margin-bottom:20px;}
+.intro-icon{font-size:80px;display:block;margin:10px 0;animation:float 3s ease-in-out infinite;}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+.stat-box{border:1px solid var(--border);padding:14px 6px;background:rgba(201,168,76,0.03);}
+.stat-n{font-family:'Cinzel',serif;font-size:26px;color:var(--gold);font-weight:700;}
+.stat-l{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+.intro-desc{font-size:14px;line-height:1.8;color:var(--dim);margin:14px 0 24px;font-weight:300;}
 
-  /* INTRO SCREEN */
-  #screen-intro {
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .intro-content { max-width: 500px; width: 100%; text-align: center; }
-  .intro-icon {
-    font-size: 80px;
-    margin-bottom: 24px;
-    display: block;
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  .intro-desc {
-    color: var(--text-dim);
-    font-size: 15px;
-    line-height: 1.8;
-    margin: 20px 0 32px;
-    font-weight: 300;
-  }
-  .intro-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 24px 0;
-  }
-  .intro-stat {
-    border: 1px solid var(--border);
-    padding: 14px 8px;
-    text-align: center;
-    background: rgba(201,168,76,0.03);
-  }
-  .intro-stat-num {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    color: var(--gold);
-    font-weight: 700;
-  }
-  .intro-stat-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 4px;
-  }
+/* ===== NAME ===== */
+#screen-name{align-items:center;justify-content:center;padding:28px 20px;}
+.name-wrap{max-width:440px;width:100%;}
+.form-lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.25em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:block;}
+.form-inp{width:100%;background:rgba(201,168,76,0.04);border:1px solid var(--border);color:var(--text);font-family:'Raleway',sans-serif;font-size:16px;padding:14px 18px;outline:none;transition:border-color 0.3s;margin-bottom:20px;}
+.form-inp:focus{border-color:var(--gold);}
+.class-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;}
+.cls-card{border:1px solid var(--border);padding:16px 10px;cursor:pointer;transition:all 0.3s;background:rgba(201,168,76,0.02);text-align:center;}
+.cls-card:hover,.cls-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.09);box-shadow:0 0 18px rgba(201,168,76,0.2);}
+.cls-icon{font-size:26px;display:block;margin-bottom:6px;}
+.cls-name{font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:0.1em;}
+.cls-desc{font-size:9px;color:var(--dim);margin-top:3px;}
 
-  /* NAME INPUT SCREEN */
-  #screen-name {
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .name-content { max-width: 440px; width: 100%; }
-  .form-section { margin-bottom: 28px; }
-  .form-label {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.25em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    display: block;
-  }
-  .form-input {
-    width: 100%;
-    background: rgba(201,168,76,0.05);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Raleway', sans-serif;
-    font-size: 16px;
-    padding: 14px 18px;
-    outline: none;
-    transition: border-color 0.3s;
-  }
-  .form-input:focus { border-color: var(--gold); }
-  .class-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .class-card {
-    border: 1px solid var(--border);
-    padding: 14px 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: rgba(201,168,76,0.02);
-    text-align: center;
-  }
-  .class-card:hover, .class-card.selected {
-    border-color: var(--gold);
-    background: rgba(201,168,76,0.08);
-  }
-  .class-card.selected { box-shadow: 0 0 16px rgba(201,168,76,0.2); }
-  .class-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
-  .class-name { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold); letter-spacing: 0.1em; }
-  .class-desc { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+/* ===== WORLD MAP ===== */
+#screen-map{padding:0;overflow-y:auto;}
+.map-header{padding:20px 20px 14px;background:rgba(9,8,13,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.map-player-row{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.map-avatar{width:44px;height:44px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(201,168,76,0.08);flex-shrink:0;}
+.map-pname{font-family:'Cinzel',serif;font-size:16px;color:var(--gold-l);}
+.map-pcls{font-size:10px;color:var(--dim);letter-spacing:0.15em;text-transform:uppercase;}
+.map-xp-row{display:flex;gap:10px;flex-wrap:wrap;}
+.xp-chip{padding:5px 12px;border:1px solid var(--border);font-size:11px;color:var(--dim);}
+.xp-chip span{color:var(--gold);font-family:'Cinzel',serif;font-weight:700;}
+.map-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.25em;color:var(--gold);text-transform:uppercase;margin:16px 20px 10px;display:flex;align-items:center;gap:10px;}
+.map-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  /* QUIZ SCREEN */
-  #screen-quiz { padding: 0; }
-  .quiz-header {
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(13,11,15,0.8);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .quiz-zone {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .quiz-progress-bar {
-    height: 3px;
-    background: rgba(201,168,76,0.15);
-    margin-top: 10px;
-    position: relative;
-    overflow: hidden;
-  }
-  .quiz-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
-    transition: width 0.4s ease;
-  }
-  .quiz-counter {
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-  .quiz-body { padding: 32px 20px; flex: 1; }
-  .question-text {
-    font-size: 18px;
-    line-height: 1.6;
-    font-weight: 400;
-    margin-bottom: 32px;
-    color: var(--text);
-  }
-  .answer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .answer-btn {
-    padding: 16px 12px;
-    border: 1px solid var(--border);
-    background: rgba(201,168,76,0.02);
-    color: var(--text-dim);
-    font-family: 'Raleway', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-align: center;
-    line-height: 1.3;
-  }
-  .answer-btn:hover {
-    border-color: var(--gold);
-    color: var(--gold);
-    background: rgba(201,168,76,0.06);
-  }
-  .answer-btn.selected {
-    border-color: var(--gold);
-    background: rgba(201,168,76,0.12);
-    color: var(--gold-light);
-    box-shadow: 0 0 16px rgba(201,168,76,0.2);
-  }
-  .answer-value { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; display: block; margin-bottom: 4px; }
-  .zone-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border: 1px solid var(--border);
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: var(--text-dim);
-    margin-bottom: 16px;
-    text-transform: uppercase;
-  }
+/* ZONE CARDS on map */
+.zones-list{padding:0 16px 24px;}
+.zone-card{border:1px solid var(--border);margin-bottom:12px;cursor:pointer;transition:all 0.3s;overflow:hidden;position:relative;background:var(--dark2);}
+.zone-card:hover{border-color:var(--gold-d);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.zone-card.locked{opacity:0.45;cursor:not-allowed;pointer-events:none;}
+.zone-card.completed{border-color:var(--green);}
+.zone-card-inner{display:flex;align-items:center;gap:14px;padding:16px;}
+.zone-big-icon{font-size:40px;flex-shrink:0;width:54px;text-align:center;}
+.zone-info{flex:1;}
+.zone-level-tag{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+.zone-name{font-family:'Cinzel',serif;font-size:18px;font-weight:700;letter-spacing:0.08em;}
+.zone-sub{font-size:11px;color:var(--dim);margin-top:3px;}
+.zone-status{flex-shrink:0;text-align:center;}
+.zone-status-icon{font-size:22px;display:block;}
+.zone-status-txt{font-size:9px;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+.zone-score-bar{height:3px;background:rgba(255,255,255,0.06);margin-top:10px;}
+.zone-score-fill{height:100%;transition:width 0.8s;}
+.zone-card.locked .zone-big-icon{filter:grayscale(1);}
+.locked-badge{position:absolute;top:10px;right:10px;padding:3px 10px;border:1px solid rgba(154,143,122,0.3);font-size:9px;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;}
 
-  /* RESULT SCREEN */
-  #screen-result { padding: 20px; overflow-y: auto; }
-  .result-header { text-align: center; margin-bottom: 32px; padding: 24px 0; }
-  .player-card {
-    border: 1px solid var(--border);
-    padding: 28px 24px;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, rgba(201,168,76,0.04), transparent);
-    position: relative;
-    overflow: hidden;
-  }
-  .player-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .player-name-display {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(20px, 4vw, 30px);
-    font-weight: 700;
-    color: var(--gold-light);
-    margin-bottom: 4px;
-  }
-  .player-class-display {
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-  .player-stats-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .player-stat-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  .player-stat-chip span { color: var(--gold); font-family: 'Cinzel', serif; font-weight: 700; }
+/* ===== ZONE INTRO ===== */
+#screen-zone-intro{padding:0;overflow-y:auto;}
+.zi-hero{position:relative;min-height:200px;display:flex;align-items:flex-end;padding:20px;background:linear-gradient(to bottom,rgba(9,8,13,0) 0%,rgba(9,8,13,0.95) 70%);}
+.zi-hero-bg{position:absolute;inset:0;font-size:100px;display:flex;align-items:center;justify-content:center;opacity:0.15;user-select:none;}
+.zi-hero-content{position:relative;z-index:2;width:100%;}
+.zi-level{font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.zi-title{font-family:'Cinzel',serif;font-size:clamp(28px,7vw,44px);font-weight:900;letter-spacing:0.08em;margin-bottom:4px;}
+.zi-subtitle{font-size:13px;color:var(--dim);font-style:italic;}
+.zi-body{padding:20px;}
+.zi-desc-box{border-left:2px solid var(--gold);padding-left:16px;margin-bottom:20px;}
+.zi-desc{font-size:14px;line-height:1.8;color:var(--dim);}
+.zi-quote{font-size:13px;color:var(--gold-d);font-style:italic;margin-top:8px;}
+.zi-aspects{margin-bottom:20px;}
+.zi-aspect{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);margin-bottom:8px;background:rgba(201,168,76,0.02);font-size:13px;color:var(--dim);}
+.zi-aspect::before{content:'→';color:var(--gold);flex-shrink:0;}
+.zi-gives{margin-bottom:24px;}
+.gives-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.25em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+.gives-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.give-box{border:1px solid var(--border);padding:10px 6px;text-align:center;background:rgba(201,168,76,0.02);}
+.give-icon{font-size:20px;display:block;margin-bottom:4px;}
+.give-label{font-size:9px;color:var(--dim);letter-spacing:0.05em;line-height:1.3;}
 
-  /* LEVEL BADGE */
-  .level-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    border: 1px solid var(--gold);
-    background: rgba(201,168,76,0.08);
-    margin-bottom: 20px;
-  }
-  .level-emoji { font-size: 22px; }
-  .level-name { font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold); letter-spacing: 0.15em; }
-  .level-score { font-size: 12px; color: var(--text-dim); }
+/* ===== QUIZ ===== */
+#screen-quiz{padding:0;}
+.quiz-hdr{padding:18px 20px 14px;background:rgba(9,8,13,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.quiz-zone-lbl{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border);font-size:9px;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+.quiz-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);}
+.quiz-bar{height:2px;background:rgba(201,168,76,0.1);margin-top:8px;}
+.quiz-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold));transition:width 0.4s;}
+.quiz-body{padding:28px 20px;flex:1;}
+.q-text{font-size:17px;line-height:1.65;margin-bottom:28px;}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ans-btn{padding:16px 10px;border:1px solid var(--border);background:rgba(201,168,76,0.02);color:var(--dim);font-family:'Raleway',sans-serif;font-size:12px;cursor:pointer;transition:all 0.22s;text-align:center;}
+.ans-btn:hover{border-color:var(--gold-d);color:var(--gold);background:rgba(201,168,76,0.06);}
+.ans-btn.sel{border-color:var(--gold);background:rgba(201,168,76,0.14);color:var(--gold-l);box-shadow:0 0 18px rgba(201,168,76,0.25);}
+.ans-val{font-family:'Cinzel',serif;font-size:22px;font-weight:700;display:block;margin-bottom:3px;}
 
-  /* ZONE CARDS */
-  .zones-grid { display: grid; gap: 14px; margin-bottom: 24px; }
-  .zone-card {
-    border: 1px solid var(--border);
-    padding: 20px;
-    background: rgba(13,11,15,0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .zone-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .zone-card-name {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 0.15em;
-    color: var(--text);
-  }
-  .zone-score-big {
-    font-family: 'Cinzel', serif;
-    font-size: 28px;
-    font-weight: 700;
-  }
-  .zone-bar-wrap {
-    height: 6px;
-    background: rgba(255,255,255,0.06);
-    overflow: hidden;
-  }
-  .zone-bar-fill {
-    height: 100%;
-    transition: width 1s ease;
-  }
-  .zone-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-  .leak-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    font-size: 11px;
-    border-radius: 0;
-    font-weight: 600;
-  }
+/* ===== BOSS ===== */
+#screen-boss{overflow-y:auto;padding:0;}
+.boss-hero{position:relative;padding:28px 20px 20px;text-align:center;background:linear-gradient(to bottom,rgba(194,59,34,0.08) 0%,rgba(9,8,13,0) 100%);border-bottom:1px solid rgba(194,59,34,0.2);}
+.boss-tag{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--red-l);margin-bottom:8px;}
+.boss-icon-big{font-size:72px;display:block;margin:6px 0;animation:bossFloat 2.5s ease-in-out infinite;}
+.boss-name-big{font-family:'Cinzel',serif;font-size:clamp(24px,5vw,36px);font-weight:900;color:var(--red-l);letter-spacing:0.06em;margin-bottom:8px;}
+.boss-phrase{font-style:italic;color:var(--dim);font-size:14px;border-left:2px solid var(--red);padding-left:14px;text-align:left;max-width:400px;margin:0 auto 16px;}
+.boss-hp-wrap{max-width:400px;margin:0 auto;}
+.boss-hp-labels{display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:11px;color:var(--dim);margin-bottom:5px;}
+.boss-hp-bar{height:10px;background:rgba(194,59,34,0.15);overflow:hidden;}
+.boss-hp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-l));transition:width 0.7s ease;}
 
-  /* RADAR CHART */
-  .radar-container {
-    display: flex;
-    justify-content: center;
-    padding: 20px 0;
-    margin-bottom: 24px;
-  }
+.boss-body{padding:20px;}
+.boss-zone-result{border:1px solid var(--border);padding:16px;margin-bottom:16px;background:rgba(201,168,76,0.03);}
+.bz-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.bz-score{font-size:13px;color:var(--dim);}
+.bz-pct{font-family:'Cinzel',serif;font-size:26px;font-weight:700;}
+.bz-bar{height:4px;background:rgba(255,255,255,0.05);}
+.bz-fill{height:100%;transition:width 0.8s;}
+.bz-meta{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;}
+.leak-tag{padding:2px 8px;border:1px solid;font-size:9px;letter-spacing:0.08em;}
 
-  /* ARCHETYPE CARD */
-  .archetype-card {
-    border: 1px solid var(--gold);
-    padding: 24px;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(45,31,78,0.2));
-    text-align: center;
-    position: relative;
-  }
-  .archetype-rarity {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .archetype-name {
-    font-family: 'Cinzel', serif;
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--gold-light);
-    margin-bottom: 8px;
-  }
-  .archetype-desc { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+.boss-weaknesses{margin-bottom:16px;}
+.weak-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.25em;color:rgba(255,107,74,0.8);text-transform:uppercase;margin-bottom:8px;}
+.weak-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(194,59,34,0.2);margin-bottom:6px;background:rgba(194,59,34,0.03);font-size:12px;color:var(--dim);}
+.weak-item::before{content:'⚡';flex-shrink:0;}
 
-  /* BOSS CARD */
-  .boss-card {
-    border: 1px solid var(--red);
-    padding: 24px;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, rgba(194,59,34,0.06), transparent);
-    position: relative;
-  }
-  .boss-label {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin-bottom: 8px;
-  }
-  .boss-name {
-    font-family: 'Cinzel', serif;
-    font-size: 24px;
-    font-weight: 900;
-    color: #FF6B4A;
-    margin-bottom: 6px;
-  }
-  .boss-phrase {
-    font-style: italic;
-    color: var(--text-dim);
-    font-size: 14px;
-    border-left: 2px solid var(--red);
-    padding-left: 14px;
-    margin: 12px 0;
-  }
-  .hp-bar-wrap {
-    margin: 14px 0 8px;
-  }
-  .hp-bar-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 0.1em;
-  }
-  .hp-bar {
-    height: 8px;
-    background: rgba(194,59,34,0.15);
-    overflow: hidden;
-  }
-  .hp-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--red), #FF6B4A);
-    width: 100%;
-    transition: width 1s ease;
-  }
+/* QUESTS */
+.sec-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.25em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.quest-item{display:flex;align-items:flex-start;gap:12px;padding:14px 14px;border:1px solid var(--border);margin-bottom:8px;background:rgba(201,168,76,0.02);cursor:pointer;transition:all 0.25s;}
+.quest-item:hover{border-color:var(--gold-d);background:rgba(201,168,76,0.05);}
+.quest-item.done{border-color:var(--green);background:rgba(42,122,79,0.07);}
+.q-check{width:22px;height:22px;border:1px solid var(--gold-d);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;transition:all 0.2s;}
+.quest-item.done .q-check{background:var(--green);border-color:var(--green);color:#fff;}
+.q-text{font-size:13px;line-height:1.5;color:var(--dim);flex:1;}
+.quest-item.done .q-text{text-decoration:line-through;color:rgba(154,143,122,0.45);}
+.q-xp{font-family:'Cinzel',serif;font-size:11px;color:var(--gold);white-space:nowrap;}
+.quest-tip{padding:12px 14px;border:1px solid var(--border);background:rgba(201,168,76,0.02);font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:16px;}
+.victory-ready{border:1px solid var(--gold);padding:16px;text-align:center;background:rgba(201,168,76,0.06);margin-bottom:12px;animation:glowPulse 2s ease-in-out infinite;}
+.victory-ready-text{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-l);margin-bottom:10px;}
 
-  /* QUESTS */
-  .quests-section { margin-bottom: 24px; }
-  .section-title {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 0.25em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-  .quest-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    margin-bottom: 8px;
-    background: rgba(201,168,76,0.02);
-    cursor: pointer;
-    transition: all 0.25s;
-  }
-  .quest-item:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.05); }
-  .quest-item.done {
-    border-color: var(--green);
-    background: rgba(42,122,79,0.08);
-    opacity: 0.7;
-  }
-  .quest-checkbox {
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--gold-dim);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
-    transition: all 0.2s;
-  }
-  .quest-item.done .quest-checkbox {
-    background: var(--green);
-    border-color: var(--green);
-  }
-  .quest-text {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--text-dim);
-    flex: 1;
-  }
-  .quest-item.done .quest-text {
-    text-decoration: line-through;
-    color: rgba(154,143,122,0.6);
-  }
-  .quest-xp {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    color: var(--gold);
-    white-space: nowrap;
-  }
+/* ===== VICTORY ===== */
+#screen-victory{align-items:center;justify-content:center;padding:28px 20px;overflow-y:auto;}
+.vic-wrap{max-width:460px;width:100%;text-align:center;}
+.vic-icon{font-size:72px;display:block;margin:10px 0;animation:float 2s ease-in-out infinite;}
+.vic-tag{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.vic-title{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:var(--gold-l);margin-bottom:6px;}
+.reward-card{border:1px solid var(--gold);padding:20px;margin:16px 0;background:rgba(201,168,76,0.05);}
+.reward-xp{font-family:'Cinzel',serif;font-size:40px;font-weight:900;color:var(--gold);}
+.reward-lbl{font-size:11px;color:var(--dim);letter-spacing:0.15em;text-transform:uppercase;}
+.title-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--gold-d);background:rgba(201,168,76,0.06);margin:8px 0;}
+.badge-icon{font-size:20px;}
+.badge-txt{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);}
+.next-preview{border:1px solid var(--border);padding:14px;margin:14px 0;background:rgba(201,168,76,0.02);}
+.next-lbl{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.next-name{font-family:'Cinzel',serif;font-size:16px;color:var(--gold);}
 
-  /* XP SECTION */
-  .xp-section { margin-bottom: 24px; }
-  .xp-display {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .xp-number {
-    font-family: 'Cinzel', serif;
-    font-size: 40px;
-    font-weight: 900;
-    color: var(--gold);
-    line-height: 1;
-  }
-  .xp-label { color: var(--text-dim); font-size: 14px; letter-spacing: 0.2em; }
-  .xp-bar-wrap { height: 8px; background: rgba(201,168,76,0.1); overflow: hidden; }
-  .xp-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold-dim), var(--gold-light));
-    transition: width 1.2s ease;
-  }
-  .xp-next { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+/* ===== FINAL ===== */
+#screen-final{overflow-y:auto;padding:20px 20px 80px;}
+.final-wrap{max-width:480px;margin:0 auto;}
+.final-card{border:1px solid var(--border);padding:20px;margin-bottom:16px;background:rgba(201,168,76,0.03);position:relative;}
+.final-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.arch-card{border:1px solid var(--gold);padding:22px;margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,0.05),rgba(45,31,78,0.2));text-align:center;position:relative;}
+.arch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.arch-rarity{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:6px;}
+.arch-name{font-family:'Cinzel',serif;font-size:24px;font-weight:900;color:var(--gold-l);margin-bottom:6px;}
+.arch-desc{font-size:13px;color:var(--dim);line-height:1.7;}
+.zones-sum{display:grid;gap:8px;margin-bottom:16px;}
+.zs-card{border:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;background:var(--dark2);}
+.zs-icon{font-size:22px;flex-shrink:0;}
+.zs-info{flex:1;}
+.zs-name{font-family:'Cinzel',serif;font-size:11px;color:var(--text);letter-spacing:0.08em;margin-bottom:4px;}
+.zs-bar{height:3px;background:rgba(255,255,255,0.05);}
+.zs-fill{height:100%;transition:width 1s;}
+.zs-pct{font-family:'Cinzel',serif;font-size:18px;font-weight:700;flex-shrink:0;}
+.cta-card{border:1px solid var(--gold);padding:22px;margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,0.05),rgba(45,31,78,0.15));text-align:center;position:relative;}
+.cta-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.cta-h{font-family:'Cinzel',serif;font-size:17px;color:var(--gold-l);margin-bottom:10px;}
+.cta-d{font-size:13px;color:var(--dim);line-height:1.7;margin-bottom:16px;}
+.titles-earned{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.et{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--gold-d);background:rgba(201,168,76,0.06);font-family:'Cinzel',serif;font-size:11px;color:var(--gold);}
 
-  /* TITLE BADGE */
-  .title-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    border: 1px solid var(--gold-dim);
-    background: rgba(201,168,76,0.06);
-    margin-bottom: 8px;
-  }
-  .title-name { font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold); }
+/* DAMAGE POPUP */
+.dmg{position:fixed;top:40%;left:50%;transform:translateX(-50%) translateY(-50%);font-family:'Cinzel',serif;font-size:42px;font-weight:900;pointer-events:none;animation:dmgFloat 1.2s ease forwards;z-index:999;}
 
-  /* ACHIEVEMENTS */
-  .achievements-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  .achievement {
-    border: 1px solid var(--border);
-    padding: 14px 10px;
-    text-align: center;
-    background: rgba(201,168,76,0.02);
-    transition: all 0.3s;
-  }
-  .achievement.unlocked {
-    border-color: var(--gold-dim);
-    background: rgba(201,168,76,0.08);
-  }
-  .achievement-icon { font-size: 24px; margin-bottom: 6px; display: block; filter: grayscale(1); }
-  .achievement.unlocked .achievement-icon { filter: none; }
-  .achievement-name { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.3; }
-  .achievement.unlocked .achievement-name { color: var(--gold); }
+/* ANIMATIONS */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes bossFloat{0%,100%{transform:translateY(0) rotate(0)}33%{transform:translateY(-6px) rotate(-2deg)}66%{transform:translateY(-3px) rotate(2deg)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 16px rgba(201,168,76,0.2)}50%{box-shadow:0 0 32px rgba(201,168,76,0.5)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dmgFloat{0%{opacity:1;transform:translateX(-50%) translateY(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-200%)}}
+@keyframes confettiFall{0%{opacity:1;transform:rotate(0) translateY(0)}100%{opacity:0;transform:rotate(720deg) translateY(100vh)}}
+.fade-up{animation:fadeUp 0.5s ease forwards;}
 
-  /* CTA SECTION */
-  .cta-section {
-    border: 1px solid var(--gold);
-    padding: 28px 24px;
-    margin-bottom: 24px;
-    text-align: center;
-    background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(45,31,78,0.15));
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .cta-title {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    color: var(--gold-light);
-    margin-bottom: 12px;
-    font-weight: 700;
-  }
-  .cta-desc { font-size: 14px; color: var(--text-dim); line-height: 1.7; margin-bottom: 20px; }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: sticky;
-    bottom: 0;
-    display: flex;
-    border-top: 1px solid var(--border);
-    background: rgba(13,11,15,0.95);
-    backdrop-filter: blur(12px);
-    z-index: 20;
-    padding: 4px 0;
-  }
-  .nav-btn {
-    flex: 1;
-    padding: 12px 4px;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-family: 'Raleway', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: color 0.2s;
-    text-align: center;
-  }
-  .nav-btn .nav-icon { font-size: 20px; display: block; margin-bottom: 3px; }
-  .nav-btn:hover, .nav-btn.active { color: var(--gold); }
-
-  /* TABS */
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* ANIMATIONS */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .fade-in { animation: fadeIn 0.5s ease forwards; }
-  @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.2); }
-    50% { box-shadow: 0 0 40px rgba(201,168,76,0.4); }
-  }
-  .glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
-  @keyframes confettiFall {
-    0% { transform: rotate(0deg) translateY(0); opacity: 1; }
-    100% { transform: rotate(720deg) translateY(100vh); opacity: 0; }
-  }
-
-  /* RADAR SVG */
-  .radar-svg { width: 240px; height: 240px; }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--dark); }
-  ::-webkit-scrollbar-thumb { background: var(--gold-dim); }
-
-  /* MISC */
-  .tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border: 1px solid var(--border);
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin: 2px;
-  }
-  .text-gold { color: var(--gold); }
-  .text-red { color: var(--red); }
-  .text-green { color: #5CB85C; }
-  .mb-8 { margin-bottom: 8px; }
-  .mb-16 { margin-bottom: 16px; }
-  .mb-24 { margin-bottom: 24px; }
-  .center { text-align: center; }
-  .page-pad { padding: 20px; }
-  hr.gold { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-  /* SUBBOSS */
-  .subboss-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-  .subboss-card {
-    border: 1px solid rgba(194,59,34,0.3);
-    padding: 12px 8px;
-    text-align: center;
-    background: rgba(194,59,34,0.03);
-  }
-  .subboss-name { font-family: 'Cinzel', serif; font-size: 10px; color: #FF6B4A; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .subboss-desc { font-size: 9px; color: var(--text-dim); line-height: 1.4; }
-
-  .damage-popup {
-    position: fixed;
-    top: 40%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    font-family: 'Cinzel', serif;
-    font-size: 40px;
-    font-weight: 900;
-    color: var(--green);
-    pointer-events: none;
-    animation: damageFloat 1.2s ease forwards;
-    z-index: 999;
-  }
-  @keyframes damageFloat {
-    0% { opacity: 1; transform: translateX(-50%) translateY(-50%); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-120%); }
-  }
-  .confetti-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 998;
-  }
-  .result-scroll { overflow-y: auto; flex: 1; padding-bottom: 80px; }
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--dark);}
+::-webkit-scrollbar-thumb{background:var(--gold-d);}
 </style>
 </head>
 <body>
 
-<!-- SCREEN: INTRO -->
+<!-- ===== INTRO ===== -->
 <div id="screen-intro" class="screen active">
-  <div class="intro-content">
-    <div class="game-header">
-      <div class="game-title">TORIA RPG</div>
-      <div class="game-subtitle">Карта Искажений Дохода</div>
-      <div class="divider"></div>
-    </div>
-    <span class="intro-icon">🗺️</span>
-    <div class="intro-stats">
-      <div class="intro-stat">
-        <div class="intro-stat-num">24</div>
-        <div class="intro-stat-label">Вопроса</div>
+  <div style="display:flex;align-items:center;justify-content:center;flex:1;padding:30px 20px;text-align:center;">
+    <div style="max-width:480px;width:100%;">
+      <div class="cin900 intro-title text-gold">TORIA RPG</div>
+      <div class="intro-sub">Карта Искажений Дохода</div>
+      <div class="div-gold"></div>
+      <span class="intro-icon">🗺️</span>
+      <img id="intro-img" src="" alt="" style="width:100%;max-width:380px;border:1px solid var(--border);margin:0 0 10px;display:none;" onerror="this.style.display='none'" onload="this.style.display='block';document.querySelector('.intro-icon').style.display='none'">
+      <div class="stats3">
+        <div class="stat-box"><div class="stat-n">4</div><div class="stat-l">Уровня</div></div>
+        <div class="stat-box"><div class="stat-n">4</div><div class="stat-l">Босса</div></div>
+        <div class="stat-box"><div class="stat-n">20</div><div class="stat-l">Квестов</div></div>
       </div>
-      <div class="intro-stat">
-        <div class="intro-stat-num">4</div>
-        <div class="intro-stat-label">Зоны</div>
+      <p class="intro-desc">Выбирай уровни в любом порядке. Отвечай на вопросы, сражайся с боссом, выполняй квесты и получай XP. Узнай, где именно теряется твой доход.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-gold" onclick="showScreen('screen-name')">⚔️ Начать игру</button>
       </div>
-      <div class="intro-stat">
-        <div class="intro-stat-num">7</div>
-        <div class="intro-stat-label">Архетипов</div>
-      </div>
-    </div>
-    <p class="intro-desc">Ты можешь много знать, много работать — и оставаться на том же финансовом уровне. Причина — утечки внутри системы.<br><br>Пройди диагностику за 5 минут и узнай, <strong>где именно теряется доход</strong>.</p>
-    <button class="btn btn-primary" onclick="showScreen('screen-name')" style="width:100%">
-      ⚔️ Начать игру
-    </button>
-    <div style="margin-top: 16px;">
-      <button class="btn" onclick="showScreen('screen-name')" style="width:100%; border-color: rgba(201,168,76,0.3); color: var(--text-dim); font-size:11px">
-        Уже проходила? Войти по имени
-      </button>
     </div>
   </div>
 </div>
 
-<!-- SCREEN: NAME + CLASS -->
+<!-- ===== NAME ===== -->
 <div id="screen-name" class="screen">
-  <div style="padding: 24px 20px 0; flex-shrink: 0;">
-    <div class="game-title" style="font-size:22px">Создай персонажа</div>
-    <div class="divider" style="margin: 10px 0 0;"></div>
+  <div style="padding:24px 20px 0;flex-shrink:0;">
+    <div class="cin900 text-gold" style="font-size:22px;">Создай персонажа</div>
+    <div class="div-gold" style="margin:8px 0 0;width:60px;"></div>
   </div>
-  <div style="padding: 20px; flex: 1; overflow-y: auto;">
-    <div class="name-content" style="margin: 0 auto;">
-      <div class="form-section">
-        <label class="form-label">Твоё имя</label>
-        <input type="text" id="player-name-input" class="form-input" placeholder="Введи своё имя..." maxlength="30">
+  <div style="padding:18px 20px;flex:1;overflow-y:auto;">
+    <div class="name-wrap" style="margin:0 auto;">
+      <label class="form-lbl">Твоё имя</label>
+      <input type="text" id="inp-name" class="form-inp" placeholder="Введи своё имя..." maxlength="30">
+      <label class="form-lbl">Выбери класс</label>
+      <div class="class-grid">
+        <div class="cls-card" onclick="selClass(this,'Эксперт')"><span class="cls-icon">🎓</span><div class="cls-name">Эксперт</div><div class="cls-desc">Знания</div></div>
+        <div class="cls-card" onclick="selClass(this,'Наставник')"><span class="cls-icon">🧭</span><div class="cls-name">Наставник</div><div class="cls-desc">Сопровождение</div></div>
+        <div class="cls-card" onclick="selClass(this,'Игропрактик')"><span class="cls-icon">🎲</span><div class="cls-name">Игропрактик</div><div class="cls-desc">Трансформация</div></div>
+        <div class="cls-card" onclick="selClass(this,'Предприниматель')"><span class="cls-icon">🚀</span><div class="cls-name">Предприниматель</div><div class="cls-desc">Масштаб</div></div>
+        <div class="cls-card" onclick="selClass(this,'Создатель')" style="grid-column:span 2"><span class="cls-icon">🎨</span><div class="cls-name">Создатель</div><div class="cls-desc">Идеи и продукты</div></div>
       </div>
-      <div class="form-section">
-        <label class="form-label">Выбери класс</label>
-        <div class="class-grid">
-          <div class="class-card" onclick="selectClass(this, 'Эксперт')" data-class="Эксперт">
-            <span class="class-emoji">🎓</span>
-            <div class="class-name">Эксперт</div>
-            <div class="class-desc">Знания</div>
-          </div>
-          <div class="class-card" onclick="selectClass(this, 'Наставник')" data-class="Наставник">
-            <span class="class-emoji">🧭</span>
-            <div class="class-name">Наставник</div>
-            <div class="class-desc">Сопровождение</div>
-          </div>
-          <div class="class-card" onclick="selectClass(this, 'Игропрактик')" data-class="Игропрактик">
-            <span class="class-emoji">🎲</span>
-            <div class="class-name">Игропрактик</div>
-            <div class="class-desc">Трансформация</div>
-          </div>
-          <div class="class-card" onclick="selectClass(this, 'Предприниматель')" data-class="Предприниматель">
-            <span class="class-emoji">🚀</span>
-            <div class="class-name">Предприниматель</div>
-            <div class="class-desc">Масштаб</div>
-          </div>
-          <div class="class-card" onclick="selectClass(this, 'Создатель')" data-class="Создатель" style="grid-column: span 2;">
-            <span class="class-emoji">🎨</span>
-            <div class="class-name">Создатель</div>
-            <div class="class-desc">Идеи и продукты</div>
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="startQuiz()" style="width:100%">
-        Начать диагностику →
-      </button>
+      <button class="btn btn-gold" onclick="startGame()">Войти в мир →</button>
     </div>
   </div>
 </div>
 
-<!-- SCREEN: QUIZ -->
+<!-- ===== WORLD MAP ===== -->
+<div id="screen-map" class="screen">
+  <div class="map-header">
+    <div class="map-player-row">
+      <div class="map-avatar" id="map-avatar">🎓</div>
+      <div>
+        <div class="map-pname" id="map-pname">—</div>
+        <div class="map-pcls" id="map-pcls">—</div>
+      </div>
+    </div>
+    <div class="map-xp-row">
+      <div class="xp-chip">⚡ XP <span id="map-xp">0</span></div>
+      <div class="xp-chip">🏆 Побед <span id="map-wins">0</span>/4</div>
+      <div class="xp-chip" id="map-title-chip">🌱 Новичок</div>
+    </div>
+  </div>
+  <div class="map-title">🗺️ Карта мира</div>
+  <div class="zones-list" id="zones-list"></div>
+</div>
+
+<!-- ===== ZONE INTRO ===== -->
+<div id="screen-zone-intro" class="screen">
+  <div class="zi-hero" id="zi-hero">
+    <div class="zi-hero-bg" id="zi-hero-bg">🏦</div>
+    <img id="zi-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;display:none;" onerror="this.style.display='none'" onload="this.style.display='block'">
+    <div class="zi-hero-content">
+      <div class="zi-level" id="zi-level">Уровень 1</div>
+      <div class="cin900 zi-title text-gold" id="zi-title">ДЕНЬГИ</div>
+      <div class="zi-subtitle" id="zi-subtitle">Финансовая основа твоей системы</div>
+    </div>
+  </div>
+  <div class="zi-body">
+    <div class="zi-desc-box">
+      <div class="zi-desc" id="zi-desc"></div>
+      <div class="zi-quote" id="zi-quote"></div>
+    </div>
+    <div class="zi-aspects" id="zi-aspects"></div>
+    <div class="zi-gives">
+      <div class="gives-title">Что даёт этот уровень</div>
+      <div class="gives-grid" id="zi-gives"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-gold" id="zi-start-btn" onclick="startZoneQuiz()">⚔️ Начать уровень</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-map')">← Вернуться на карту</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QUIZ ===== -->
 <div id="screen-quiz" class="screen">
-  <div class="quiz-header">
-    <div class="zone-indicator" id="quiz-zone-label">🏦 Деньги</div>
-    <div class="quiz-zone" id="quiz-zone-title">Зона: Деньги</div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="quiz-counter" id="quiz-counter">Вопрос 1 из 24</div>
-      <div class="quiz-counter" id="quiz-score-counter" style="color: var(--gold);">0 баллов</div>
+  <div class="quiz-hdr">
+    <div class="quiz-zone-lbl" id="q-lbl">🏦 Деньги</div>
+    <div class="quiz-meta">
+      <span id="q-counter">Вопрос 1 из 6</span>
+      <span style="color:var(--gold);font-family:'Cinzel',serif;" id="q-score">0 баллов</span>
     </div>
-    <div class="quiz-progress-bar">
-      <div class="quiz-progress-fill" id="quiz-progress" style="width:0%"></div>
-    </div>
+    <div class="quiz-bar"><div class="quiz-fill" id="q-fill" style="width:0%"></div></div>
   </div>
   <div class="quiz-body">
-    <div id="question-text" class="question-text"></div>
-    <div class="answer-grid" id="answer-grid">
-      <button class="answer-btn" onclick="selectAnswer(0)"><span class="answer-value">0</span>Никогда</button>
-      <button class="answer-btn" onclick="selectAnswer(1)"><span class="answer-value">1</span>Редко</button>
-      <button class="answer-btn" onclick="selectAnswer(2)"><span class="answer-value">2</span>Иногда</button>
-      <button class="answer-btn" onclick="selectAnswer(3)"><span class="answer-value">3</span>Часто</button>
-      <button class="answer-btn" onclick="selectAnswer(4)"><span class="answer-value">4</span>Почти всегда</button>
-      <button class="answer-btn" onclick="selectAnswer(5)"><span class="answer-value">5</span>Всегда</button>
+    <div id="q-text" class="q-text"></div>
+    <div class="ans-grid">
+      <button class="ans-btn" onclick="pickAnswer(0)"><span class="ans-val">0</span>Никогда</button>
+      <button class="ans-btn" onclick="pickAnswer(1)"><span class="ans-val">1</span>Редко</button>
+      <button class="ans-btn" onclick="pickAnswer(2)"><span class="ans-val">2</span>Иногда</button>
+      <button class="ans-btn" onclick="pickAnswer(3)"><span class="ans-val">3</span>Часто</button>
+      <button class="ans-btn" onclick="pickAnswer(4)"><span class="ans-val">4</span>Почти всегда</button>
+      <button class="ans-btn" onclick="pickAnswer(5)"><span class="ans-val">5</span>Всегда</button>
     </div>
   </div>
 </div>
 
-<!-- SCREEN: RESULT -->
-<div id="screen-result" class="screen">
-  <div class="result-scroll" id="result-scroll">
-
-    <!-- TAB: КАРТА -->
-    <div class="tab-content active page-pad" id="tab-map">
-
-      <div class="game-header" style="padding: 20px 0 10px; text-align:left;">
-        <div class="game-title" style="font-size:20px">Карта Дохода</div>
-        <div class="divider" style="margin: 8px 0 0; width:80px;"></div>
-      </div>
-
-      <!-- Player Card -->
-      <div class="player-card fade-in" id="player-card">
-        <div class="player-name-display" id="result-name">—</div>
-        <div class="player-class-display" id="result-class">—</div>
-        <div class="player-stats-row" id="result-stats-row">
-          <div class="player-stat-chip">⚡ XP <span id="chip-xp">0</span></div>
-          <div class="player-stat-chip">📊 <span id="chip-score">0</span>/120</div>
-          <div class="player-stat-chip">🔥 Серия <span id="chip-streak">1</span></div>
-        </div>
-      </div>
-
-      <!-- Level Badge -->
-      <div class="level-badge glow-pulse" id="level-badge">
-        <span class="level-emoji" id="level-emoji">⚫</span>
-        <div>
-          <div class="level-name" id="level-name">Выживание</div>
-          <div class="level-score" id="level-score">0–30 баллов</div>
-        </div>
-      </div>
-
-      <!-- Radar -->
-      <div class="radar-container">
-        <svg class="radar-svg" id="radar-svg" viewBox="0 0 240 240">
-          <!-- Bg rings -->
-          <polygon points="120,20 220,70 220,170 120,220 20,170 20,70" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1"/>
-          <polygon points="120,45 195,82.5 195,157.5 120,195 45,157.5 45,82.5" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1"/>
-          <polygon points="120,70 170,95 170,145 120,170 70,145 70,95" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1"/>
-          <polygon points="120,95 145,107.5 145,132.5 120,145 95,132.5 95,107.5" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="1"/>
-          <!-- Axes -->
-          <line x1="120" y1="120" x2="120" y2="20" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
-          <line x1="120" y1="120" x2="220" y2="70" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
-          <line x1="120" y1="120" x2="220" y2="170" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
-          <line x1="120" y1="120" x2="120" y2="220" stroke="rgba(201,168,76,0.15)" stroke-width="1"/>
-          <!-- Data polygon -->
-          <polygon id="radar-polygon" points="120,120 120,120 120,120 120,120" fill="rgba(201,168,76,0.15)" stroke="#C9A84C" stroke-width="2"/>
-          <!-- Labels -->
-          <text x="120" y="14" text-anchor="middle" font-size="10" fill="#C9A84C" font-family="Cinzel">ДЕНЬГИ</text>
-          <text x="228" y="70" text-anchor="start" font-size="10" fill="#C9A84C" font-family="Cinzel">КЛИЕНТЫ</text>
-          <text x="228" y="176" text-anchor="start" font-size="10" fill="#C9A84C" font-family="Cinzel">ПРОДАЖИ</text>
-          <text x="120" y="232" text-anchor="middle" font-size="10" fill="#C9A84C" font-family="Cinzel">МЫШЛЕНИЕ</text>
-        </svg>
-      </div>
-
-      <!-- Zones -->
-      <div class="section-title">Зоны дохода</div>
-      <div class="zones-grid" id="zones-grid"></div>
-
+<!-- ===== BOSS ===== -->
+<div id="screen-boss" class="screen">
+  <div class="boss-hero">
+    <div class="boss-tag">Главный босс</div>
+    <img id="b-img" src="" alt="" style="width:100%;max-height:260px;object-fit:cover;object-position:top;margin-bottom:12px;display:none;opacity:0.9;" onerror="this.style.display='none'" onload="this.style.display='block'">
+    <span class="boss-icon-big" id="b-icon">👹</span>
+    <div class="boss-name-big" id="b-name">ОБЕСЦЕНИВАНИЕ</div>
+    <div class="boss-phrase" id="b-phrase">«Кто ты такая, чтобы брать больше?»</div>
+    <div class="boss-hp-wrap">
+      <div class="boss-hp-labels"><span>HP Босса</span><span id="b-hp-num" style="color:var(--red-l)">100/100</span></div>
+      <div class="boss-hp-bar"><div class="boss-hp-fill" id="b-hp-fill" style="width:100%"></div></div>
     </div>
-
-    <!-- TAB: БОСС -->
-    <div class="tab-content page-pad" id="tab-boss">
-      <div class="section-title" style="margin-bottom: 20px;">⚔️ Главный Boss</div>
-      <div id="boss-container"></div>
-
-      <div class="section-title">Подбоссы</div>
-      <div class="subboss-grid" id="subboss-grid"></div>
-
-      <div class="section-title">Квесты</div>
-      <div id="quests-container"></div>
-
-      <div style="margin-top: 16px; padding: 14px 16px; border: 1px solid var(--border); background: rgba(201,168,76,0.03); font-size:12px; color: var(--text-dim); line-height: 1.6;">
-        💡 Каждый выполненный квест наносит <strong style="color:var(--gold)">-20 HP</strong> боссу. Победи всех 5 — и откроется новый уровень игры.
-      </div>
-    </div>
-
-    <!-- TAB: АРХЕТИП -->
-    <div class="tab-content page-pad" id="tab-archetype">
-      <div class="section-title" style="margin-bottom: 20px;">✨ Твой Архетип</div>
-      <div id="archetype-container"></div>
-
-      <div class="section-title">XP и Титул</div>
-      <div class="xp-section" id="xp-section">
-        <div class="xp-display">
-          <div class="xp-number" id="xp-display">0</div>
-          <div class="xp-label">XP</div>
-        </div>
-        <div class="xp-bar-wrap">
-          <div class="xp-bar-fill" id="xp-bar" style="width:0%"></div>
-        </div>
-        <div class="xp-next" id="xp-next"></div>
-      </div>
-
-      <div class="title-badge" id="title-badge">
-        <span id="title-icon">🌱</span>
-        <span class="title-name" id="title-name">Новичок</span>
-      </div>
-
-      <hr class="gold">
-      <div class="section-title" style="margin-top: 20px;">🏆 Достижения</div>
-      <div class="achievements-grid" id="achievements-grid"></div>
-    </div>
-
-    <!-- TAB: ПЛАН -->
-    <div class="tab-content page-pad" id="tab-plan">
-      <div class="section-title" style="margin-bottom: 20px;">📍 Следующий шаг</div>
-      <div id="plan-container"></div>
-
-      <div class="cta-section" id="cta-section">
-        <div class="cta-title">Хочешь разобрать Карту вживую?</div>
-        <div class="cta-desc">Полный разбор с Торией — 48 вопросов, 8 зон, твой тип искажения и одно конкретное действие.<br>Выходишь с ясностью, а не списком советов.</div>
-        <button class="btn btn-primary" onclick="openToria()" style="width:100%">
-          Записаться на разбор →
-        </button>
-        <div style="margin-top: 12px;">
-          <button class="btn" onclick="shareResult()" style="width:100%">
-            📤 Поделиться результатом
-          </button>
-        </div>
-      </div>
-
-      <div style="text-align:center; padding: 20px 0;">
-        <button class="btn btn-danger btn-sm" onclick="resetGame()">
-          Начать заново
-        </button>
-      </div>
-    </div>
-
   </div>
+  <div class="boss-body">
+    <div class="boss-zone-result" id="b-zone-result"></div>
+    <div class="boss-weaknesses" id="b-weaknesses"></div>
+    <div class="sec-title">⚔️ Квесты для победы</div>
+    <div id="b-quests"></div>
+    <div class="quest-tip">💡 Каждый выполненный квест наносит <strong style="color:var(--gold)">-20 HP</strong> боссу. Можешь выйти и вернуться — прогресс сохраняется.</div>
+    <div class="victory-ready" id="b-victory-ready" style="display:none;">
+      <div class="victory-ready-text">🏆 Босс повержен! Забери победу!</div>
+      <button class="btn btn-gold" onclick="claimVictory()">Получить награду →</button>
+    </div>
+    <button class="btn btn-ghost" onclick="showScreen('screen-map')" style="margin-top:8px;">← Вернуться на карту</button>
+  </div>
+</div>
 
-  <!-- Bottom Nav -->
-  <div class="bottom-nav">
-    <button class="nav-btn active" onclick="switchTab('map', this)">
-      <span class="nav-icon">🗺️</span>Карта
-    </button>
-    <button class="nav-btn" onclick="switchTab('boss', this)">
-      <span class="nav-icon">👹</span>Босс
-    </button>
-    <button class="nav-btn" onclick="switchTab('archetype', this)">
-      <span class="nav-icon">✨</span>Архетип
-    </button>
-    <button class="nav-btn" onclick="switchTab('plan', this)">
-      <span class="nav-icon">📍</span>План
-    </button>
+<!-- ===== VICTORY ===== -->
+<div id="screen-victory" class="screen">
+  <div class="vic-wrap">
+    <span class="vic-icon">🏆</span>
+    <div class="vic-tag">Босс повержен!</div>
+    <div class="vic-title cin900" id="v-boss">ОБЕСЦЕНИВАНИЕ</div>
+    <div class="div-gold"></div>
+    <div class="reward-card fade-up">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;">Награда</div>
+      <div class="reward-xp" id="v-xp">+150 XP</div>
+      <div class="reward-lbl">опыта получено</div>
+      <div style="margin-top:14px;">
+        <div class="title-badge"><span class="badge-icon" id="v-ti">💰</span><span class="badge-txt" id="v-tn">Новый титул!</span></div>
+      </div>
+    </div>
+    <div id="v-next-wrap">
+      <div class="next-preview">
+        <div class="next-lbl">Продолжить</div>
+        <div class="next-name" id="v-next">↩ Вернуться на карту мира</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+      <button class="btn btn-gold" onclick="afterVictory()">← Карта мира</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FINAL ===== -->
+<div id="screen-final" class="screen">
+  <div class="final-wrap">
+    <div style="text-align:center;padding:22px 0 10px;">
+      <div style="font-size:9px;letter-spacing:0.4em;color:var(--dim);text-transform:uppercase;margin-bottom:6px;">Все боссы повержены</div>
+      <div class="cin900 text-gold" style="font-size:28px;">Карта Дохода</div>
+      <div class="div-gold"></div>
+    </div>
+    <div class="final-card">
+      <div class="cin" style="font-size:22px;color:var(--gold-l);margin-bottom:4px;" id="f-name">—</div>
+      <div style="font-size:10px;letter-spacing:0.2em;color:var(--dim);text-transform:uppercase;margin-bottom:14px;" id="f-class">—</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="padding:7px 14px;border:1px solid var(--border);font-size:11px;color:var(--dim);">⚡ XP <span style="color:var(--gold);font-family:'Cinzel',serif;font-weight:700;" id="f-xp">0</span></div>
+        <div style="padding:7px 14px;border:1px solid var(--border);font-size:11px;color:var(--dim);">📊 <span style="color:var(--gold);font-family:'Cinzel',serif;font-weight:700;" id="f-score">0</span>/120</div>
+      </div>
+    </div>
+    <div class="sec-title">🏅 Заработанные титулы</div>
+    <div class="titles-earned" id="f-titles"></div>
+    <div class="sec-title">✨ Твой Архетип</div>
+    <div class="arch-card" id="f-arch"></div>
+    <div class="sec-title">📊 Карта зон</div>
+    <div class="zones-sum" id="f-zones"></div>
+    <div class="cta-card">
+      <div class="cta-h">Хочешь разобрать карту вживую?</div>
+      <div class="cta-d">Полный разбор с Торией — 48 вопросов, 8 зон, твой тип искажения и одно конкретное действие. Выходишь с ясностью.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-gold" onclick="openToria()">Записаться на разбор →</button>
+        <button class="btn btn-ghost" onclick="shareResult()">📤 Поделиться результатом</button>
+      </div>
+    </div>
+    <div style="text-align:center;padding:8px 0 16px;">
+      <button class="btn btn-ghost btn-sm" style="width:auto;padding:8px 18px;" onclick="resetGame()">Начать заново</button>
+    </div>
   </div>
 </div>
 
 <script>
-// VK Bridge init
-if (typeof vkBridge !== 'undefined') {
-  vkBridge.send('VKWebAppInit');
-}
+if(typeof vkBridge!=='undefined')vkBridge.send('VKWebAppInit');
+
+// Set intro image
+window.addEventListener('load',()=>{
+  document.getElementById('intro-img').src=IMGS.intro;
+});
 
 // ============================================================
 // DATA
 // ============================================================
-const ZONES = [
-  { id: 'money', label: '🏦 Деньги', color: '#C9A84C', boss: 'ОБЕСЦЕНИВАНИЕ' },
-  { id: 'clients', label: '📢 Клиенты', color: '#4A90D9', boss: 'НЕВИДИМОСТЬ' },
-  { id: 'sales', label: '🤝 Продажи', color: '#7B4FD4', boss: 'ИЗБЕГАНИЕ' },
-  { id: 'mindset', label: '🧠 Мышление', color: '#D44F4F', boss: 'САМОЗВАНЕЦ' },
-];
-
-const QUESTIONS = [
-  // ДЕНЬГИ (0-5)
-  { zone: 0, text: 'Я знаю точно, сколько зарабатываю и трачу каждый месяц' },
-  { zone: 0, text: 'Я называю свою цену уверенно, без оправданий и скидок' },
-  { zone: 0, text: 'Моя цена отражает реальную ценность того, что я даю' },
-  { zone: 0, text: 'Я веду учёт доходов и понимаю, откуда приходят деньги' },
-  { zone: 0, text: 'Я поднимаю цены, когда вижу, что они занижены' },
-  { zone: 0, text: 'Я считаю стоимость своего часа и работаю, исходя из неё' },
-  // КЛИЕНТЫ (6-11)
-  { zone: 1, text: 'Я регулярно появляюсь в соцсетях и меня видит моя аудитория' },
-  { zone: 1, text: 'Люди понимают, чем я занимаюсь и что могу им дать' },
-  { zone: 1, text: 'Ко мне приходят новые клиенты без постоянного «поиска»' },
-  { zone: 1, text: 'Я делаю прямые офферы — предлагаю свои услуги открыто' },
-  { zone: 1, text: 'Я использую партнёрства и рекомендации для привлечения клиентов' },
-  { zone: 1, text: 'Я показываю своё лицо, рассказываю личные истории, создаю доверие' },
-  // ПРОДАЖИ (12-17)
-  { zone: 2, text: 'Я провожу продающие диагностики/консультации регулярно' },
-  { zone: 2, text: 'Я закрываю клиента на решение, а не оставляю разговор без итога' },
-  { zone: 2, text: 'Я делаю повторные касания — напоминаю о себе заинтересованным' },
-  { zone: 2, text: 'Мне комфортно говорить о деньгах и называть цену напрямую' },
-  { zone: 2, text: 'Я умею работать с возражениями, не снижая ценность услуги' },
-  { zone: 2, text: 'Я знаю, почему клиенты отказываются, и использую это' },
-  // МЫШЛЕНИЕ (18-23)
-  { zone: 3, text: 'Я чувствую себя достаточно компетентной, чтобы брать за работу хорошие деньги' },
-  { zone: 3, text: 'Я выкладываю контент и запускаю продукты, не дожидаясь идеала' },
-  { zone: 3, text: 'Я действую даже когда страшно или нет стопроцентной уверенности' },
-  { zone: 3, text: 'Я не сравниваю себя с конкурентами так, что это тормозит меня' },
-  { zone: 3, text: 'Я могу принять комплимент и согласиться со своей экспертностью' },
-  { zone: 3, text: 'Я не жду «правильного момента» — создаю возможности сама' },
-];
-
-const BOSSES = {
-  0: {
-    name: 'ОБЕСЦЕНИВАНИЕ',
-    phrase: '«Кто ты такая, чтобы брать больше?»',
-    emoji: '👹',
-    quests: [
-      { text: 'Поднять цену на услугу', xp: 40 },
-      { text: 'Провести продажу без скидки', xp: 30 },
-      { text: 'Назвать цену без оправданий', xp: 25 },
-      { text: 'Посчитать стоимость своего часа', xp: 20 },
-      { text: 'Собрать результаты клиентов и оформить', xp: 30 },
-    ],
-    subbosses: [
-      { name: 'Нищий Эксперт', desc: 'Знает много. Берет мало.' },
-      { name: 'Даритель', desc: 'Помогает бесплатно.' },
-      { name: 'Финансовый Слепец', desc: 'Не управляет деньгами.' },
+const ZONES=[
+  {
+    id:'money',icon:'💰',title:'ДЕНЬГИ',level:'Уровень 1',
+    subtitle:'Финансовая основа твоей системы',
+    color:'#C9A84C',
+    desc:'Деньги — это энергия. Этот уровень проверяет, как ты управляешь финансами, ставишь цену и строишь отношения с деньгами.',
+    quote:'«Не важно, сколько ты зарабатываешь. Важно, сколько остаётся у тебя и работает на тебя.»',
+    aspects:['Финансовая ясность и учёт','Ценообразование без извинений','Учёт прибыли и управление деньгами'],
+    gives:[{icon:'🎯',label:'Финансовая ясность'},{icon:'🛡️',label:'Стабильность и уверенность'},{icon:'📈',label:'Рост дохода и капитала'}],
+    boss:{name:'ОБЕСЦЕНИВАНИЕ',icon:'👹',phrase:'«Кто ты такая, чтобы брать больше?»',
+      weaknesses:['Твоя ценность доказана результатами клиентов','Цена — это твоё право, а не просьба'],
+      quests:[
+        {text:'Поднять цену на услугу',xp:40},
+        {text:'Провести продажу без скидки',xp:30},
+        {text:'Назвать цену без оправданий',xp:25},
+        {text:'Посчитать стоимость своего часа',xp:20},
+        {text:'Собрать результаты клиентов',xp:30},
+      ]
+    },
+    zoneTitleIcon:'💰',zoneTitleName:'Повелитель Денег',
+    questions:[
+      'Я знаю точно, сколько зарабатываю и трачу каждый месяц',
+      'Я называю свою цену уверенно, без оправданий и скидок',
+      'Моя цена отражает реальную ценность того, что я даю',
+      'Я веду учёт доходов и понимаю, откуда приходят деньги',
+      'Я поднимаю цены, когда вижу, что они занижены',
+      'Я считаю стоимость своего часа и работаю исходя из неё',
     ]
   },
-  1: {
-    name: 'НЕВИДИМОСТЬ',
-    phrase: '«Сначала подготовься получше.»',
-    emoji: '👤',
-    quests: [
-      { text: '7 дней сторис подряд без перерыва', xp: 35 },
-      { text: 'Написать 3 экспертных поста', xp: 30 },
-      { text: 'Показать лицо в видео-формате', xp: 20 },
-      { text: 'Рассказать личную историю подписчикам', xp: 25 },
-      { text: 'Сделать прямой оффер своей аудитории', xp: 50 },
-    ],
-    subbosses: [
-      { name: 'Призрак', desc: 'Редко появляется.' },
-      { name: 'Шифровщик', desc: 'Непонятно объясняет ценность.' },
-      { name: 'Одинокий Волк', desc: 'Не использует партнёрства.' },
+  {
+    id:'clients',icon:'📢',title:'КЛИЕНТЫ',level:'Уровень 2',
+    subtitle:'Притягивай нужных людей и выстраивай отношения',
+    color:'#4A90D9',
+    desc:'Клиенты — это поток. Когда система работает, они приходят сами. Этот уровень проверяет твою видимость и позиционирование.',
+    quote:'«Тебя находят не тогда, когда ты ищешь. Тебя находят, когда ты становишься магнитом.»',
+    aspects:['Проявленность и регулярность','Позиционирование и ясность','Поток клиентов и партнёрства'],
+    gives:[{icon:'🧲',label:'Привлекает нужных людей'},{icon:'💬',label:'Повышает доверие'},{icon:'👥',label:'Увеличивает поток'},{icon:'📈',label:'Рост влияния'}],
+    boss:{name:'НЕВИДИМОСТЬ',icon:'👤',phrase:'«Сначала подготовься получше.»',
+      weaknesses:['Твоя видимость приносит деньги и влияние','Не видно — не значит не ценно. Покажи себя миру'],
+      quests:[
+        {text:'7 дней сторис подряд без перерыва',xp:35},
+        {text:'3 поста о себе и своей экспертности',xp:30},
+        {text:'Показать лицо и голос в видео',xp:20},
+        {text:'Рассказать свою историю подписчикам',xp:25},
+        {text:'Сделать прямой оффер своей аудитории',xp:50},
+      ]
+    },
+    zoneTitleIcon:'🌟',zoneTitleName:'Магнит Клиентов',
+    questions:[
+      'Я регулярно появляюсь в соцсетях и меня видит моя аудитория',
+      'Люди понимают, чем я занимаюсь и что могу им дать',
+      'Ко мне приходят новые клиенты без постоянного поиска',
+      'Я делаю прямые офферы — предлагаю свои услуги открыто',
+      'Я использую партнёрства и рекомендации для привлечения',
+      'Я показываю своё лицо, рассказываю истории, создаю доверие',
     ]
   },
-  2: {
-    name: 'ИЗБЕГАНИЕ',
-    phrase: '«Если человеку надо — он сам купит.»',
-    emoji: '🙈',
-    quests: [
-      { text: 'Провести 5 диагностических сессий', xp: 125 },
-      { text: 'Сделать 5 прямых офферов', xp: 50 },
-      { text: 'Запросить решение у потенциального клиента', xp: 30 },
-      { text: 'Сделать повторный контакт с «думающим» клиентом', xp: 25 },
-      { text: 'Собрать причины отказов и разобрать их', xp: 20 },
-    ],
-    subbosses: [
-      { name: 'Уговариватель', desc: 'Пытается убедить вместо продажи.' },
-      { name: 'Спасатель', desc: 'Помогает вместо продажи.' },
-      { name: 'Избегающий Решение', desc: 'Не закрывает клиента на выбор.' },
+  {
+    id:'sales',icon:'🤝',title:'ПРОДАЖИ',level:'Уровень 3',
+    subtitle:'Превращай ценность в результат и закрывай сделки',
+    color:'#7B4FD4',
+    desc:'Продажи — это мост между твоей ценностью и результатом клиента. Ты не продаёшь — ты помогаешь принять правильное решение.',
+    quote:'«Ты не продаёшь. Ты помогаешь принять правильное решение.»',
+    aspects:['Продающие консультации и диагностики','Работа с возражениями','Закрытие клиента на решение'],
+    gives:[{icon:'🎯',label:'Привлечение готовых клиентов'},{icon:'✅',label:'Ведение к решению'},{icon:'📈',label:'Рост конверсии'},{icon:'💰',label:'Стабильный поток продаж'}],
+    boss:{name:'ИЗБЕГАНИЕ',icon:'🙈',phrase:'«Если человеку надо — он сам купит.»',
+      weaknesses:['Дисциплина, фокус, действие прямо сейчас','Избегание не защищает — оно крадёт твой доход'],
+      quests:[
+        {text:'Провести 5 диагностических сессий',xp:50},
+        {text:'Сделать 5 прямых офферов',xp:50},
+        {text:'Запросить решение у потенциального клиента',xp:30},
+        {text:'Сделать повторный контакт с думающим клиентом',xp:25},
+        {text:'Собрать причины отказов и разобрать их',xp:20},
+      ]
+    },
+    zoneTitleIcon:'🤝',zoneTitleName:'Мастер Продаж',
+    questions:[
+      'Я провожу продающие диагностики и консультации регулярно',
+      'Я закрываю клиента на решение, а не оставляю без итога',
+      'Я делаю повторные касания — напоминаю о себе',
+      'Мне комфортно говорить о деньгах и называть цену',
+      'Я умею работать с возражениями, не снижая ценность',
+      'Я знаю, почему клиенты отказываются, и использую это',
     ]
   },
-  3: {
-    name: 'САМОЗВАНЕЦ',
-    phrase: '«Ты ещё недостаточно хороша.»',
-    emoji: '🎭',
-    quests: [
-      { text: 'Выписать 10 реальных результатов своих клиентов', xp: 20 },
-      { text: 'Выпустить несовершенный продукт или пост', xp: 30 },
-      { text: 'Провести консультацию, назначив нормальную цену', xp: 30 },
-      { text: 'Попросить отзыв у 3 клиентов и получить его', xp: 30 },
-      { text: 'Опубликовать «несовершенный» контент и не удалять', xp: 25 },
-    ],
-    subbosses: [
-      { name: 'Вечный Ученик', desc: 'Постоянно учится, мало делает.' },
-      { name: 'Перфекционист', desc: 'Постоянно дорабатывает.' },
-      { name: 'Сравниватель', desc: 'Сравнивает себя с другими.' },
+  {
+    id:'mindset',icon:'🧠',title:'МЫШЛЕНИЕ',level:'Уровень 4',
+    subtitle:'Прокачай стратегию, дисциплину и убеждения',
+    color:'#D44F4F',
+    desc:'Твоё мышление — это центр управления всей системой. Прокачай его — и другие уровни дадут 10x результат.',
+    quote:'«Сначала ты управляешь своим мышлением, затем оно начинает управлять твоей жизнью.»',
+    aspects:['Уверенность в своей экспертности','Действие без ожидания идеала','Фокус и стратегия роста'],
+    gives:[{icon:'💡',label:'Ясность в решениях'},{icon:'🔭',label:'Видение возможностей'},{icon:'♾️',label:'Устойчивость'},{icon:'🚀',label:'Ускорение'},{icon:'👑',label:'Мышление лидера'}],
+    boss:{name:'САМОЗВАНЕЦ',icon:'🎭',phrase:'«Ты ещё недостаточно хороша.»',
+      weaknesses:['Честность, действия, смелость быть видимой','Ты носишь маску скромности — но это твоя клетка'],
+      quests:[
+        {text:'Выписать 10 реальных результатов клиентов',xp:20},
+        {text:'Выпустить несовершенный продукт или пост',xp:30},
+        {text:'Провести консультацию, назначив нормальную цену',xp:30},
+        {text:'Попросить отзыв у 3 клиентов и получить его',xp:30},
+        {text:'Опубликовать несовершенный контент и не удалять',xp:25},
+      ]
+    },
+    zoneTitleIcon:'🧠',zoneTitleName:'Железный Разум',
+    questions:[
+      'Я чувствую себя компетентной, чтобы брать хорошие деньги',
+      'Я выкладываю контент и запускаю продукты без идеала',
+      'Я действую даже когда страшно или нет уверенности',
+      'Я не сравниваю себя с другими так, что это тормозит меня',
+      'Я могу принять комплимент и согласиться со своей экспертностью',
+      'Я не жду правильного момента — создаю возможности сама',
     ]
   }
+];
+
+const ARCHETYPES=[
+  {name:'Архитектор Дохода',rarity:'👑 Мифический',rc:'#F0D080',c:z=>z.every(v=>v>=70),desc:'Скрытый архетип. Система работает на всех уровнях. Время масштабирования и влияния.'},
+  {name:'Строитель',rarity:'🟣 Легендарный',rc:'#9B59B6',c:z=>z.every(v=>v>=40&&v<70),desc:'Создаёшь систему. Все зоны работают, но ни одна не на максимуме. Нужна фокусировка.'},
+  {name:'Невидимка',rarity:'⚪ Обычный',rc:'#888',c:z=>z[1]<40,desc:'Сильный специалист с слабой видимостью. Люди не знают, что ты существуешь — и не покупают.'},
+  {name:'Спасатель',rarity:'⚪ Обычный',rc:'#888',c:z=>z[2]<40,desc:'Помогаешь больше, чем продаёшь. Продажи — это тоже помощь, просто с ценой.'},
+  {name:'Вечный Ученик',rarity:'🟢 Редкий',rc:'#5CB85C',c:z=>z[3]<40,desc:'Потребляешь знания, мало действуешь. Ты знаешь достаточно — вопрос в том, чтобы начать.'},
+  {name:'Собиратель',rarity:'🟢 Редкий',rc:'#5CB85C',c:z=>z[0]<40,desc:'Зарабатываешь, но не удерживаешь деньги. Финансовой системы нет.'},
+  {name:'Хранитель',rarity:'🔵 Эпический',rc:'#4A90D9',c:z=>z[0]>=50&&z[1]<40,desc:'Умеешь считать, не умеешь привлекать. Финансово дисциплинирована, но поток нестабилен.'},
+];
+
+const TITLES=[
+  {name:'Новичок',icon:'🌱',xp:0},
+  {name:'Искатель',icon:'⚔️',xp:100},
+  {name:'Практик',icon:'🛡️',xp:250},
+  {name:'Мастер',icon:'🏹',xp:500},
+  {name:'Архитектор',icon:'👑',xp:800},
+  {name:'Легенда',icon:'💎',xp:1200},
+];
+
+const CLASS_ICONS={'Эксперт':'🎓','Наставник':'🧭','Игропрактик':'🎲','Предприниматель':'🚀','Создатель':'🎨'};
+
+const BASE='https://raw.githubusercontent.com/toriyasudba-sudo/Karta/main/';
+const IMGS={
+  intro: BASE+'intro.png',
+  levels:[BASE+'level1.png',BASE+'level2.png',BASE+'level3.png',BASE+'level4.png'],
+  bosses:[BASE+'boss1.png',BASE+'boss2.png',BASE+'boss3.png',BASE+'boss4.png'],
 };
-
-const ARCHETYPES = [
-  { name: 'Невидимка', condition: z => z[1] < 40, rarity: '⚪ Обычный', rarityColor: '#888', desc: 'Сильный специалист с слабой видимостью. Люди не знают, что ты существуешь — и не покупают. Твоя работа: выйти из тени.' },
-  { name: 'Спасатель', condition: z => z[2] < 40, rarity: '⚪ Обычный', rarityColor: '#888', desc: 'Помогаешь больше, чем продаёшь. Клиентам хорошо. Тебе — не очень. Продажи — это тоже помощь, просто с ценой.' },
-  { name: 'Вечный Ученик', condition: z => z[3] < 40, rarity: '🟢 Редкий', rarityColor: '#5CB85C', desc: 'Потребляешь знания, мало действуешь. Ты знаешь достаточно — вопрос не в знаниях, а в том, чтобы начать.' },
-  { name: 'Собиратель', condition: z => z[0] < 40 && z[2] >= 40, rarity: '🟢 Редкий', rarityColor: '#5CB85C', desc: 'Зарабатываешь, но не удерживаешь деньги. Доход есть — финансовой системы нет. Деньги уходят туда, куда ты не смотришь.' },
-  { name: 'Хранитель', condition: z => z[0] >= 50 && z[1] < 40, rarity: '🔵 Эпический', rarityColor: '#4A90D9', desc: 'Умеешь считать, не умеешь привлекать. Финансово дисциплинирована — но поток клиентов нестабилен.' },
-  { name: 'Строитель', condition: z => z.every(v => v >= 40 && v < 70), rarity: '🟣 Легендарный', rarityColor: '#9B59B6', desc: 'Создаёшь систему. Все зоны работают, но ни одна не на максимуме. Ты на верном пути — нужна фокусировка.' },
-  { name: 'Архитектор Дохода', condition: z => z.every(v => v >= 70), rarity: '👑 Мифический', rarityColor: '#F0D080', desc: 'Скрытый архетип. Система работает на всех уровнях. Твоя задача — масштабирование и влияние.' },
-];
-
-const TITLES = [
-  { name: 'Новичок', icon: '🌱', xp: 0 },
-  { name: 'Искатель', icon: '⚔️', xp: 500 },
-  { name: 'Практик', icon: '🛡️', xp: 1000 },
-  { name: 'Мастер', icon: '🏹', xp: 2500 },
-  { name: 'Архитектор', icon: '👑', xp: 5000 },
-  { name: 'Легенда', icon: '💎', xp: 10000 },
-];
-
-const LEVELS = [
-  { name: 'Выживание', emoji: '⚫', min: 0, max: 30, desc: 'Система дохода нуждается в полной перестройке. Начни с самой слабой зоны.' },
-  { name: 'Хаос', emoji: '🟠', min: 31, max: 60, desc: 'Что-то работает, что-то нет. Нужна стабилизация и устранение главных утечек.' },
-  { name: 'Стабилизация', emoji: '🟡', min: 61, max: 90, desc: 'Основа есть. Пора выстраивать систему и убирать оставшиеся потери.' },
-  { name: 'Рост', emoji: '🟢', min: 91, max: 110, desc: 'Система работает. Следующий шаг — масштабирование и усиление слабых зон.' },
-  { name: 'Масштабирование', emoji: '🔵', min: 111, max: 120, desc: 'Ты в топ 5% экспертов по системности дохода. Время выходить на новый уровень влияния.' },
-];
-
-const ACHIEVEMENTS = [
-  { id: 'first_quiz', name: 'Первая диагностика', icon: '🎯', hint: 'Пройди диагностику', condition: s => s.totalScore >= 0 },
-  { id: 'money_master', name: 'Финансовая ясность', icon: '💰', hint: 'Деньги: 20+ баллов', condition: s => s.zones[0] >= 20 },
-  { id: 'visible', name: 'Видимая сила', icon: '🌟', hint: 'Клиенты: 20+ баллов', condition: s => s.zones[1] >= 20 },
-  { id: 'seller', name: 'Система продаж', icon: '🤝', hint: 'Продажи: 20+ баллов', condition: s => s.zones[2] >= 20 },
-  { id: 'confident', name: 'Внутренняя сила', icon: '🧠', hint: 'Мышление: 20+ баллов', condition: s => s.zones[3] >= 20 },
-  { id: 'quest1', name: 'Первый квест', icon: '⚔️', hint: 'Выполни 1 квест', condition: s => s.questsDone.filter(Boolean).length >= 1 },
-  { id: 'quest3', name: 'Боец', icon: '🛡️', hint: 'Выполни 3 квеста', condition: s => s.questsDone.filter(Boolean).length >= 3 },
-  { id: 'boss', name: 'Победа над боссом', icon: '🏆', hint: 'Выполни все 5 квестов', condition: s => s.questsDone.filter(Boolean).length >= 5 },
-  { id: 'balanced', name: 'Баланс зон', icon: '⚖️', hint: 'Набери 12+ в каждой зоне', condition: s => s.zones.every(z => z >= 12) },
-  { id: 'high', name: 'Высокий результат', icon: '🔥', hint: 'Набери 80+ баллов', condition: s => s.totalScore >= 80 },
-  { id: 'perfect', name: 'Архитектор Дохода', icon: '👑', hint: 'Набери 100+ баллов', condition: s => s.totalScore >= 100 },
-  { id: 'xp500', name: 'Искатель', icon: '💫', hint: 'Накопи 500 XP', condition: s => s.xp >= 500 },
-];
 
 // ============================================================
 // STATE
 // ============================================================
-let state = {
-  screen: 'intro',
-  playerName: '',
-  playerClass: '',
-  currentQ: 0,
-  answers: new Array(24).fill(null),
-  zones: [0, 0, 0, 0],
-  totalScore: 0,
-  questsDone: [false, false, false, false, false],
-  xp: 250,
+let G={
+  name:'',cls:'',
+  activeZone:0,
+  curQ:0,
+  zAns:[],
+  scores:[null,null,null,null],      // null = не пройден
+  questsDone:[[],[],[],[]].map(()=>[false,false,false,false,false]),
+  bossDefeated:[false,false,false,false],
+  totalXP:0,
+  earnedTitles:[],
 };
 
 // ============================================================
-// NAVIGATION
+// NAV
 // ============================================================
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  state.screen = id;
-}
-
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  btn.classList.add('active');
-  document.getElementById('result-scroll').scrollTop = 0;
+  window.scrollTo(0,0);
 }
 
 // ============================================================
 // NAME / CLASS
 // ============================================================
-function selectClass(el, cls) {
-  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  state.playerClass = cls;
+function selClass(el,cls){
+  document.querySelectorAll('.cls-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  G.cls=cls;
+}
+function startGame(){
+  const n=document.getElementById('inp-name').value.trim();
+  if(!n){document.getElementById('inp-name').style.borderColor='var(--red)';return;}
+  if(!G.cls){alert('Выбери класс!');return;}
+  G.name=n;
+  renderMap();
+  showScreen('screen-map');
 }
 
-function startQuiz() {
-  const name = document.getElementById('player-name-input').value.trim();
-  if (!name) {
-    document.getElementById('player-name-input').style.borderColor = '#C23B22';
-    document.getElementById('player-name-input').style.animation = 'shake 0.3s ease';
-    setTimeout(() => {
-      document.getElementById('player-name-input').style.animation = '';
-    }, 300);
+// ============================================================
+// MAP
+// ============================================================
+function renderMap(){
+  document.getElementById('map-pname').textContent=G.name;
+  document.getElementById('map-pcls').textContent='Класс: '+G.cls;
+  document.getElementById('map-avatar').textContent=CLASS_ICONS[G.cls]||'🎓';
+  document.getElementById('map-xp').textContent=G.totalXP;
+  document.getElementById('map-wins').textContent=G.bossDefeated.filter(Boolean).length;
+
+  // Title
+  const t=[...TITLES].reverse().find(t=>G.totalXP>=t.xp)||TITLES[0];
+  document.getElementById('map-title-chip').textContent=t.icon+' '+t.name;
+
+  // Zone cards
+  const list=document.getElementById('zones-list');
+  list.innerHTML='';
+  ZONES.forEach((z,i)=>{
+    const score=G.scores[i];
+    const beaten=G.bossDefeated[i];
+    const inProgress=score!==null&&!beaten;
+    const pct=score!==null?Math.round(score/30*100):0;
+
+    const card=document.createElement('div');
+    card.className='zone-card'+(beaten?' completed':'');
+    card.onclick=()=>openZone(i);
+
+    let statusIcon=beaten?'✅':'⚔️';
+    let statusTxt=beaten?'Пройден':score!==null?'Босс ждёт':'Пройти';
+    let barHtml=score!==null?`<div class="zone-score-bar"><div class="zone-score-fill" style="width:${pct}%;background:${z.color};"></div></div>`:'';
+
+    card.innerHTML=`
+      <div class="zone-card-inner">
+        <div class="zone-big-icon">${z.icon}</div>
+        <div class="zone-info">
+          <div class="zone-level-tag">${z.level}</div>
+          <div class="zone-name" style="color:${z.color}">${z.title}</div>
+          <div class="zone-sub">${z.subtitle}</div>
+          ${barHtml}
+        </div>
+        <div class="zone-status">
+          <span class="zone-status-icon">${statusIcon}</span>
+          <span class="zone-status-txt">${statusTxt}</span>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  // All done?
+  if(G.bossDefeated.every(Boolean)){
+    const fin=document.createElement('button');
+    fin.className='btn btn-gold';
+    fin.style.margin='8px 0 0';
+    fin.textContent='🏆 Получить финальный результат';
+    fin.onclick=showFinal;
+    list.appendChild(fin);
+  }
+}
+
+function openZone(i){
+  G.activeZone=i;
+  const z=ZONES[i];
+
+  // If quiz already done — go straight to boss
+  if(G.scores[i]!==null){
+    renderBoss();
+    showScreen('screen-boss');
     return;
   }
-  if (!state.playerClass) {
-    alert('Выбери класс игрока!');
-    return;
-  }
-  state.playerName = name;
-  state.currentQ = 0;
-  state.answers = new Array(24).fill(null);
-  showScreen('screen-quiz');
-  renderQuestion();
+
+  // Show zone intro
+  document.getElementById('zi-img').src=IMGS.levels[i];
+  document.getElementById('zi-level').textContent=z.level;
+  document.getElementById('zi-title').textContent=z.title;
+  document.getElementById('zi-subtitle').textContent=z.subtitle;
+  document.getElementById('zi-hero-bg').textContent=z.icon;
+  document.getElementById('zi-desc').textContent=z.desc;
+  document.getElementById('zi-quote').textContent=z.quote;
+  document.getElementById('zi-hero').style.background=`linear-gradient(to bottom, ${z.color}22 0%, rgba(9,8,13,0.97) 75%)`;
+
+  document.getElementById('zi-aspects').innerHTML=z.aspects.map(a=>`<div class="zi-aspect">${a}</div>`).join('');
+  document.getElementById('zi-gives').innerHTML=z.gives.map(g=>`<div class="give-box"><span class="give-icon">${g.icon}</span><div class="give-label">${g.label}</div></div>`).join('');
+  showScreen('screen-zone-intro');
 }
 
 // ============================================================
 // QUIZ
 // ============================================================
-function renderQuestion() {
-  const q = QUESTIONS[state.currentQ];
-  const zone = ZONES[q.zone];
-  const progress = ((state.currentQ) / 24) * 100;
-
-  document.getElementById('quiz-zone-label').textContent = zone.label;
-  document.getElementById('quiz-zone-title').textContent = `Зона: ${zone.label.split(' ')[1]}`;
-  document.getElementById('quiz-counter').textContent = `Вопрос ${state.currentQ + 1} из 24`;
-  document.getElementById('quiz-score-counter').textContent = `${state.answers.filter(a => a !== null).reduce((s, a) => s + a, 0)} баллов`;
-  document.getElementById('quiz-progress').style.width = progress + '%';
-  document.getElementById('question-text').textContent = q.text;
-
-  const prev = state.answers[state.currentQ];
-  document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-    btn.classList.toggle('selected', prev === i);
-  });
+function startZoneQuiz(){
+  G.curQ=0;
+  G.zAns=[];
+  renderQ();
+  showScreen('screen-quiz');
 }
-
-function selectAnswer(val) {
-  state.answers[state.currentQ] = val;
-  document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-    btn.classList.toggle('selected', i === val);
-  });
-
-  setTimeout(() => {
-    if (state.currentQ < 23) {
-      state.currentQ++;
-      renderQuestion();
-    } else {
-      finishQuiz();
-    }
-  }, 300);
+function renderQ(){
+  const z=ZONES[G.activeZone];
+  document.getElementById('q-lbl').textContent=z.icon+' '+z.title;
+  document.getElementById('q-counter').textContent=`Вопрос ${G.curQ+1} из 6`;
+  document.getElementById('q-score').textContent=G.zAns.reduce((s,a)=>s+a,0)+' баллов';
+  document.getElementById('q-fill').style.width=(G.curQ/6*100)+'%';
+  document.getElementById('q-text').textContent=z.questions[G.curQ];
+  document.querySelectorAll('.ans-btn').forEach(b=>b.classList.remove('sel'));
 }
-
-// ============================================================
-// FINISH
-// ============================================================
-function finishQuiz() {
-  // Calculate zone scores
-  state.zones = [0, 0, 0, 0];
-  QUESTIONS.forEach((q, i) => {
-    if (state.answers[i] !== null) state.zones[q.zone] += state.answers[i];
-  });
-  state.totalScore = state.zones.reduce((s, z) => s + z, 0);
-
-  // XP
-  state.xp = 250 + state.totalScore * 3;
-  if (state.totalScore >= 80) state.xp += 200;
-  if (state.totalScore >= 100) state.xp += 300;
-
-  renderResult();
-  showScreen('screen-result');
+function pickAnswer(v){
+  document.querySelectorAll('.ans-btn').forEach((b,i)=>b.classList.toggle('sel',i===v));
+  setTimeout(()=>{
+    G.zAns.push(v);
+    if(G.curQ<5){G.curQ++;renderQ();}
+    else finishQuiz();
+  },270);
 }
-
-// ============================================================
-// RENDER RESULT
-// ============================================================
-function renderResult() {
-  // Player card
-  document.getElementById('result-name').textContent = state.playerName;
-  document.getElementById('result-class').textContent = `Класс: ${state.playerClass}`;
-  document.getElementById('chip-xp').textContent = state.xp;
-  document.getElementById('chip-score').textContent = state.totalScore;
-
-  // Level
-  const level = LEVELS.find(l => state.totalScore >= l.min && state.totalScore <= l.max) || LEVELS[0];
-  document.getElementById('level-emoji').textContent = level.emoji;
-  document.getElementById('level-name').textContent = level.name;
-  document.getElementById('level-score').textContent = `${level.min}–${level.max} баллов`;
-
-  // Radar
-  renderRadar();
-
-  // Zones
-  renderZones();
-
-  // Boss
+function finishQuiz(){
+  const score=G.zAns.reduce((s,a)=>s+a,0);
+  G.scores[G.activeZone]=score;
+  const baseXP=50+score*4;
+  G.totalXP+=baseXP;
   renderBoss();
-
-  // Archetype
-  renderArchetype();
-
-  // XP/Title
-  renderTitle();
-
-  // Achievements
-  renderAchievements();
-
-  // Plan
-  renderPlan();
+  showScreen('screen-boss');
 }
 
-function renderRadar() {
-  const cx = 120, cy = 120, maxR = 100;
-  const pcts = state.zones.map(z => z / 30);
-  const angles = [-Math.PI/2, 0, Math.PI/2, Math.PI];
-  const points = pcts.map((p, i) => {
-    const r = p * maxR;
-    return `${cx + r * Math.cos(angles[i])},${cy + r * Math.sin(angles[i])}`;
-  }).join(' ');
-  document.getElementById('radar-polygon').setAttribute('points', points);
-}
+// ============================================================
+// BOSS
+// ============================================================
+function renderBoss(){
+  const zi=G.activeZone;
+  const z=ZONES[zi];
+  const boss=z.boss;
+  const score=G.scores[zi];
+  const pct=Math.round(score/30*100);
+  const leak=100-pct;
+  const done=G.questsDone[zi].filter(Boolean).length;
+  const hp=100-done*20;
 
-function renderZones() {
-  const container = document.getElementById('zones-grid');
-  container.innerHTML = '';
-  ZONES.forEach((zone, i) => {
-    const score = state.zones[i];
-    const pct = Math.round(score / 30 * 100);
-    const leak = 100 - pct;
+  // Hero
+  document.getElementById('b-img').src=IMGS.bosses[zi];
+  document.getElementById('b-icon').textContent=boss.icon;
+  document.getElementById('b-name').textContent='👹 '+boss.name;
+  document.getElementById('b-phrase').textContent=boss.phrase;
+  document.getElementById('b-hp-num').textContent=`${hp}/100`;
+  document.getElementById('b-hp-fill').style.width=hp+'%';
 
-    let leakColor = '#5CB85C';
-    if (leak > 60) leakColor = '#C23B22';
-    else if (leak > 30) leakColor = '#E8A020';
-
-    const el = document.createElement('div');
-    el.className = 'zone-card';
-    el.innerHTML = `
-      <div class="zone-card-header">
-        <div>
-          <div style="font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px;">${zone.label}</div>
-          <div class="zone-card-name">${score}/30 баллов</div>
-        </div>
-        <div class="zone-score-big" style="color:${zone.color}">${pct}%</div>
-      </div>
-      <div class="zone-bar-wrap">
-        <div class="zone-bar-fill" style="width:${pct}%; background: linear-gradient(90deg, ${zone.color}80, ${zone.color});"></div>
-      </div>
-      <div class="zone-meta">
-        <span>Эффективность</span>
-        <span class="leak-badge" style="color:${leakColor}; border: 1px solid ${leakColor}40;">
-          ↓ Утечка ${leak}%
-        </span>
-      </div>
-    `;
-    container.appendChild(el);
-  });
-}
-
-function renderBoss() {
-  const weakZone = state.zones.indexOf(Math.min(...state.zones));
-  const boss = BOSSES[weakZone];
-
-  const hp = 100 - (state.questsDone.filter(Boolean).length * 20);
-
-  document.getElementById('boss-container').innerHTML = `
-    <div class="boss-card">
-      <div class="boss-label">Главный противник</div>
-      <div style="font-size:40px; margin-bottom: 8px;">${boss.emoji}</div>
-      <div class="boss-name">👹 ${boss.name}</div>
-      <div class="boss-phrase">${boss.phrase}</div>
-      <div class="hp-bar-wrap">
-        <div class="hp-bar-label">
-          <span>HP Босса</span>
-          <span style="color: var(--red)">${hp}/100</span>
-        </div>
-        <div class="hp-bar">
-          <div class="hp-bar-fill" style="width:${hp}%"></div>
-        </div>
-      </div>
-      <div style="font-size:11px; color: var(--text-dim); margin-top: 6px;">
-        Из зоны: ${ZONES[weakZone].label} · Утечка ${100 - Math.round(state.zones[weakZone]/30*100)}%
-      </div>
+  // Zone result
+  let lc=leak>60?'#C23B22':leak>30?'#E8A020':'#5CB85C';
+  document.getElementById('b-zone-result').innerHTML=`
+    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;">Результат: ${z.icon} ${z.title}</div>
+    <div class="bz-row">
+      <div class="bz-score">${score}/30 баллов</div>
+      <div class="bz-pct" style="color:${z.color}">${pct}%</div>
+    </div>
+    <div class="bz-bar"><div class="bz-fill" style="width:${pct}%;background:${z.color};"></div></div>
+    <div class="bz-meta">
+      <span style="color:var(--dim)">Эффективность</span>
+      <span class="leak-tag" style="color:${lc};border-color:${lc}40;">↓ Утечка ${leak}%</span>
     </div>
   `;
 
-  // Subbosses
-  document.getElementById('subboss-grid').innerHTML = boss.subbosses.map(sb => `
-    <div class="subboss-card">
-      <div class="subboss-name">${sb.name}</div>
-      <div class="subboss-desc">${sb.desc}</div>
-    </div>
-  `).join('');
+  // Weaknesses
+  document.getElementById('b-weaknesses').innerHTML=`
+    <div class="weak-title">Уязвимость босса</div>
+    ${boss.weaknesses.map(w=>`<div class="weak-item">${w}</div>`).join('')}
+  `;
 
   // Quests
-  const qc = document.getElementById('quests-container');
-  qc.innerHTML = '';
-  boss.quests.forEach((q, i) => {
-    const done = state.questsDone[i];
-    const el = document.createElement('div');
-    el.className = 'quest-item' + (done ? ' done' : '');
-    el.onclick = () => toggleQuest(i);
-    el.innerHTML = `
-      <div class="quest-checkbox">${done ? '✓' : ''}</div>
-      <div class="quest-text">${q.text}</div>
-      <div class="quest-xp">+${q.xp} XP</div>
-    `;
+  const qc=document.getElementById('b-quests');
+  qc.innerHTML='';
+  boss.quests.forEach((q,i)=>{
+    const d=G.questsDone[zi][i];
+    const el=document.createElement('div');
+    el.className='quest-item'+(d?' done':'');
+    el.onclick=()=>toggleQ(i);
+    el.innerHTML=`<div class="q-check">${d?'✓':''}</div><div class="q-text">${q.text}</div><div class="q-xp">+${q.xp} XP</div>`;
     qc.appendChild(el);
   });
+
+  // Victory button
+  document.getElementById('b-victory-ready').style.display=hp<=0?'block':'none';
 }
 
-function toggleQuest(i) {
-  state.questsDone[i] = !state.questsDone[i];
-  const gained = state.questsDone[i] ? 20 : -20;
-  showDamage(gained);
-  
-  // Update XP
-  const questXP = state.questsDone[i] ? BOSSES[getWeakZone()].quests[i].xp : -BOSSES[getWeakZone()].quests[i].xp;
-  state.xp += questXP;
-
+function toggleQ(i){
+  const zi=G.activeZone;
+  G.questsDone[zi][i]=!G.questsDone[zi][i];
+  const xp=ZONES[zi].boss.quests[i].xp*(G.questsDone[zi][i]?1:-1);
+  G.totalXP+=xp;
+  const dmg=G.questsDone[zi][i]?-20:+20;
+  showDmg(dmg);
   renderBoss();
-  renderTitle();
-  renderAchievements();
-
-  // Check boss victory
-  if (state.questsDone.filter(Boolean).length === 5) {
-    setTimeout(() => showBossVictory(), 600);
-  }
+  renderMap();
 }
 
-function getWeakZone() {
-  return state.zones.indexOf(Math.min(...state.zones));
-}
-
-function showBossVictory() {
-  const boss = BOSSES[getWeakZone()];
-  const overlay = document.createElement('div');
-  overlay.id = 'victory-overlay';
-  overlay.style.cssText = `
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(0,0,0,0.92);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 24px; text-align: center;
-    animation: fadeIn 0.5s ease;
-  `;
-  overlay.innerHTML = `
-    <div style="font-size: 72px; margin-bottom: 16px; animation: float 2s ease-in-out infinite;">🏆</div>
-    <div style="font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.4em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;">Победа!</div>
-    <div style="font-family: 'Cinzel', serif; font-size: 28px; font-weight: 900; color: var(--gold-light); margin-bottom: 8px;">Босс повержен</div>
-    <div style="font-family: 'Cinzel', serif; font-size: 18px; color: #FF6B4A; margin-bottom: 24px;">👹 ${boss.name}</div>
-    <div style="width: 100%; max-width: 360px; border: 1px solid var(--gold); padding: 20px; margin-bottom: 24px; background: rgba(201,168,76,0.06);">
-      <div style="font-size: 13px; color: var(--text-dim); line-height: 1.8; margin-bottom: 16px;">
-        Ты прошла все 5 квестов и победила главного противника этой зоны.<br><br>
-        Следующий шаг — разобрать карту с Торией вживую и получить конкретный план роста.
-      </div>
-      <div style="font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold); margin-bottom: 4px;">+200 БОНУСНЫХ XP</div>
-      <div style="font-size: 11px; color: var(--text-dim);">за победу над боссом</div>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px;">
-      <button class="btn btn-primary" onclick="document.getElementById('victory-overlay').remove(); state.xp += 200; renderTitle(); renderAchievements(); openToria();" style="width: 100%;">
-        ⚔️ Записаться на разбор с Торией
-      </button>
-      <button class="btn" onclick="document.getElementById('victory-overlay').remove();" style="width: 100%; border-color: rgba(201,168,76,0.3); color: var(--text-dim); font-size: 11px;">
-        Закрыть и продолжить игру
-      </button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  // Confetti burst
-  for (let i = 0; i < 20; i++) {
-    setTimeout(() => spawnConfetti(), i * 80);
-  }
-}
-
-function spawnConfetti() {
-  const el = document.createElement('div');
-  const colors = ['#C9A84C', '#F0D080', '#5CB85C', '#4A90D9', '#FF6B4A'];
-  el.style.cssText = `
-    position: fixed;
-    left: ${Math.random() * 100}vw;
-    top: -10px;
-    width: ${6 + Math.random() * 6}px;
-    height: ${6 + Math.random() * 6}px;
-    background: ${colors[Math.floor(Math.random() * colors.length)]};
-    z-index: 999;
-    pointer-events: none;
-    animation: confettiFall ${1.5 + Math.random()}s ease forwards;
-    transform: rotate(${Math.random() * 360}deg);
-  `;
+function showDmg(d){
+  const el=document.createElement('div');
+  el.className='dmg';
+  el.textContent=(d<0?'':'+')+(d<0?d+'HP':d+' HP');
+  el.style.color=d<0?'#5CB85C':'#C23B22';
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2500);
+  setTimeout(()=>el.remove(),1200);
 }
 
+// ============================================================
+// VICTORY
+// ============================================================
+function claimVictory(){
+  const zi=G.activeZone;
+  const z=ZONES[zi];
+  G.bossDefeated[zi]=true;
+  const victXP=100+zi*25;
+  G.totalXP+=victXP;
+  G.earnedTitles.push({icon:z.zoneTitleIcon,name:z.zoneTitleName});
 
-function showDamage(dmg) {
-  const el = document.createElement('div');
-  el.className = 'damage-popup';
-  el.textContent = (dmg > 0 ? '-' : '+') + Math.abs(dmg) + ' HP';
-  el.style.color = dmg > 0 ? '#5CB85C' : '#C23B22';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1200);
+  document.getElementById('v-boss').textContent=z.boss.name;
+  document.getElementById('v-xp').textContent='+'+victXP+' XP';
+  document.getElementById('v-ti').textContent=z.zoneTitleIcon;
+  document.getElementById('v-tn').textContent=z.zoneTitleName;
+  document.getElementById('v-next').textContent='↩ Вернуться на карту мира';
+
+  for(let i=0;i<12;i++)setTimeout(spawnConfetti,i*80);
+  showScreen('screen-victory');
 }
 
-function renderArchetype() {
-  const zPcts = state.zones.map(z => z / 30 * 100);
-  const archetype = ARCHETYPES.find(a => a.condition(zPcts)) || ARCHETYPES[0];
+function afterVictory(){
+  renderMap();
+  showScreen('screen-map');
+}
 
-  document.getElementById('archetype-container').innerHTML = `
-    <div class="archetype-card">
-      <div class="archetype-rarity" style="color: ${archetype.rarityColor}">${archetype.rarity}</div>
-      <div class="archetype-name">${archetype.name}</div>
-      <div class="divider"></div>
-      <div class="archetype-desc">${archetype.desc}</div>
-    </div>
+// ============================================================
+// FINAL
+// ============================================================
+function showFinal(){
+  const total=G.scores.reduce((s,v)=>s+(v||0),0);
+  document.getElementById('f-name').textContent=G.name;
+  document.getElementById('f-class').textContent='Класс: '+G.cls;
+  document.getElementById('f-xp').textContent=G.totalXP;
+  document.getElementById('f-score').textContent=total;
+
+  document.getElementById('f-titles').innerHTML=G.earnedTitles.map(t=>`<div class="et">${t.icon} ${t.name}</div>`).join('');
+
+  const zp=G.scores.map(s=>(s||0)/30*100);
+  const arch=ARCHETYPES.find(a=>a.c(zp))||ARCHETYPES[5];
+  document.getElementById('f-arch').innerHTML=`
+    <div class="arch-rarity" style="color:${arch.rc}">${arch.rarity}</div>
+    <div class="arch-name">${arch.name}</div>
+    <div class="div-gold"></div>
+    <div class="arch-desc">${arch.desc}</div>
   `;
-}
 
-function renderTitle() {
-  const questXP = state.questsDone.filter(Boolean).length * 25;
-  const totalXP = state.xp + questXP;
-
-  document.getElementById('xp-display').textContent = totalXP;
-
-  const title = [...TITLES].reverse().find(t => totalXP >= t.xp) || TITLES[0];
-  const nextTitle = TITLES[TITLES.indexOf(title) + 1];
-
-  document.getElementById('title-icon').textContent = title.icon;
-  document.getElementById('title-name').textContent = title.name;
-
-  if (nextTitle) {
-    const pct = Math.min(((totalXP - title.xp) / (nextTitle.xp - title.xp)) * 100, 100);
-    document.getElementById('xp-bar').style.width = pct + '%';
-    document.getElementById('xp-next').textContent = `До "${nextTitle.name}": ${nextTitle.xp - totalXP} XP`;
-  } else {
-    document.getElementById('xp-bar').style.width = '100%';
-    document.getElementById('xp-next').textContent = 'Максимальный титул достигнут 👑';
-  }
-}
-
-function renderAchievements() {
-  const container = document.getElementById('achievements-grid');
-  container.innerHTML = ACHIEVEMENTS.map(a => {
-    const unlocked = a.condition(state);
-    return `
-      <div class="achievement ${unlocked ? 'unlocked' : ''}">
-        <span class="achievement-icon">${a.icon}</span>
-        <div class="achievement-name">${a.name}</div>
-        ${!unlocked ? `<div style="font-size:9px; color: rgba(154,143,122,0.5); margin-top:3px; line-height:1.3;">${a.hint}</div>` : '<div style="font-size:9px; color: var(--gold); margin-top:3px;">✓ Получено</div>'}
-      </div>
-    `;
+  document.getElementById('f-zones').innerHTML=ZONES.map((z,i)=>{
+    const p=Math.round((G.scores[i]||0)/30*100);
+    return`<div class="zs-card"><div class="zs-icon">${z.icon}</div><div class="zs-info"><div class="zs-name">${z.title}</div><div class="zs-bar"><div class="zs-fill" style="width:${p}%;background:${z.color};"></div></div></div><div class="zs-pct" style="color:${z.color}">${p}%</div></div>`;
   }).join('');
-}
 
-function renderPlan() {
-  const weakZone = state.zones.indexOf(Math.min(...state.zones));
-  const zoneName = ZONES[weakZone].label;
-  const boss = BOSSES[weakZone];
-  const level = LEVELS.find(l => state.totalScore >= l.min && state.totalScore <= l.max) || LEVELS[0];
-
-  const leaks = ZONES.map((z, i) => ({
-    label: z.label,
-    leak: 100 - Math.round(state.zones[i] / 30 * 100),
-  })).sort((a, b) => b.leak - a.leak);
-
-  document.getElementById('plan-container').innerHTML = `
-    <div class="player-card" style="margin-bottom: 16px;">
-      <div style="font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); margin-bottom: 8px;">Твой уровень</div>
-      <div style="font-family: 'Cinzel', serif; font-size: 20px; color: var(--gold); margin-bottom: 6px;">${level.emoji} ${level.name}</div>
-      <div style="font-size: 13px; color: var(--text-dim); line-height: 1.7;">${level.desc}</div>
-    </div>
-
-    <div class="player-card" style="margin-bottom: 16px;">
-      <div style="font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); margin-bottom: 8px;">Главная утечка</div>
-      <div style="font-family: 'Cinzel', serif; font-size: 18px; color: #FF6B4A; margin-bottom: 8px;">
-        ${zoneName}
-      </div>
-      <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px; font-style: italic; border-left: 2px solid var(--red); padding-left: 12px;">
-        Твой главный противник — ${boss.name}.<br>${boss.phrase}
-      </div>
-      <div style="font-size: 12px; color: var(--text-dim);">
-        ⚡ Начни с первого квеста во вкладке «Босс». Каждое выполненное задание — реальный удар по системе.
-      </div>
-    </div>
-
-    <div class="section-title">Рейтинг утечек</div>
-    ${leaks.map(l => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 14px; border: 1px solid var(--border); margin-bottom: 6px; background: rgba(201,168,76,0.02);">
-        <span style="font-size:13px; color: var(--text-dim);">${l.label}</span>
-        <span style="font-family:'Cinzel',serif; font-size:14px; color:${l.leak > 60 ? '#C23B22' : l.leak > 30 ? '#E8A020' : '#5CB85C'};">↓${l.leak}%</span>
-      </div>
-    `).join('')}
-
-    <hr class="gold">
-    <div style="font-size: 12px; color: var(--text-dim); line-height: 1.8; margin-bottom: 20px;">
-      💡 <strong style="color:var(--text)">Правило одного фокуса:</strong> не пытайся исправить всё сразу. Одна зона → один квест → одно действие. Именно так строится доход.
-    </div>
-  `;
+  showScreen('screen-final');
 }
 
 // ============================================================
 // UTILS
 // ============================================================
-function openToria() {
-  window.open('https://vk.ru/toriyarus', '_blank');
+function spawnConfetti(){
+  const el=document.createElement('div');
+  const c=['#C9A84C','#F0D080','#5CB85C','#4A90D9','#FF6B4A'];
+  el.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-10px;width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;background:${c[~~(Math.random()*c.length)]};z-index:999;pointer-events:none;animation:confettiFall ${1.5+Math.random()}s ease forwards;transform:rotate(${Math.random()*360}deg);`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2500);
 }
-
-function shareResult() {
-  const level = LEVELS.find(l => state.totalScore >= l.min && state.totalScore <= l.max) || LEVELS[0];
-  const text = `🗺️ Прошла диагностику TORIA RPG!\n\nМой уровень: ${level.emoji} ${level.name} (${state.totalScore}/120)\nXP: ${state.xp}\n\nПройди свою Карту Искажений Дохода 👇`;
-  if (navigator.share) {
-    navigator.share({ title: 'TORIA RPG', text });
-  } else {
-    navigator.clipboard?.writeText(text).then(() => alert('Результат скопирован!')).catch(() => alert(text));
-  }
+function openToria(){window.open('https://vk.ru/toriyarus','_blank');}
+function shareResult(){
+  const total=G.scores.reduce((s,v)=>s+(v||0),0);
+  const text=`🗺️ Прошла TORIA RPG!\nСчёт: ${total}/120 · XP: ${G.totalXP}\nПройди свою Карту Искажений Дохода 👇\nhttps://vk.com/app54626442`;
+  if(navigator.share)navigator.share({title:'TORIA RPG',text});
+  else navigator.clipboard?.writeText(text).then(()=>alert('Скопировано!')).catch(()=>alert(text));
 }
-
-function resetGame() {
-  if (confirm('Начать заново? Текущий прогресс будет сброшен.')) {
-    state = {
-      screen: 'intro',
-      playerName: '',
-      playerClass: '',
-      currentQ: 0,
-      answers: new Array(24).fill(null),
-      zones: [0, 0, 0, 0],
-      totalScore: 0,
-      questsDone: [false, false, false, false, false],
-      xp: 250,
-    };
-    document.getElementById('player-name-input').value = '';
-    document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
-    showScreen('screen-intro');
-  }
+function resetGame(){
+  if(!confirm('Начать заново?'))return;
+  G={name:'',cls:'',activeZone:0,curQ:0,zAns:[],scores:[null,null,null,null],questsDone:[[],[],[],[]].map(()=>[false,false,false,false,false]),bossDefeated:[false,false,false,false],totalXP:0,earnedTitles:[]};
+  document.getElementById('inp-name').value='';
+  document.querySelectorAll('.cls-card').forEach(c=>c.classList.remove('sel'));
+  showScreen('screen-intro');
 }
 </script>
 </body>
